@@ -108,7 +108,14 @@
     }
   },
   "allOf": [
-    {},
+    {
+      "properties": {
+        "PreRelease": {
+          "type": "boolean",
+          "description": "Mark the packaged extension as a marketplace pre-release"
+        }
+      }
+    },
     {
       "$ref": "#/definitions/FalloutBuild"
     }
