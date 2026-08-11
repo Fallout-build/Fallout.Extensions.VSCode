@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fallout.Common" Version="2026.1.0-preview.104.g6583d78d2c" />
+    <PackageReference Include="Fallout.Common" Version="10.4.0" />
   </ItemGroup>
 
 </Project>

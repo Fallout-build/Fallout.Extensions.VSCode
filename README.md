@@ -12,11 +12,11 @@ Explore, run, and visualize your [Fallout](https://github.com/Fallout-build/Fall
 
 ## Requirements
 
-The extension reads a `build-graph.json` emitted by the Fallout build into `.fallout/temp/` (or the legacy `.nuke/temp/`). Run the build once (e.g. `./build.ps1 --plan`) to generate it.
+**Fallout 10.4.0 or later.** The extension reads a `build-graph.json` that the Fallout build writes into `.fallout/temp/` (or the legacy `.nuke/temp/`) on every build initialization — the emission landed in 10.4.0, so older framework versions produce no graph at all. Run the build once (e.g. `./build.ps1 --plan`) to generate it.
 
 ## Versioning
 
-The extension's `major.minor` track the Fallout framework version it targets; the patch moves independently. A mismatch between the extension and the framework your workspace builds with surfaces as a non-blocking warning.
+The extension's `major.minor` track the Fallout framework release line it targets — 10.4.x builds against Fallout 10.4 — while the patch moves independently. A mismatch between the extension and the framework your workspace builds with surfaces as a non-blocking warning.
 
 ## License
 

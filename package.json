@@ -2,7 +2,7 @@
     "name": "fallout",
     "displayName": "Fallout",
     "description": "Explore, run, and visualize your Fallout (NUKE successor) build targets from VS Code.",
-    "version": "2026.1.0",
+    "version": "10.4.15",
     "publisher": "fallout",
     "license": "MIT",
     "icon": "media/icon.png",

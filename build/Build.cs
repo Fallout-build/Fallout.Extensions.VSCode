@@ -61,8 +61,15 @@ class Build : FalloutBuild
 
     // The extension version tracks the Fallout framework it was built against — the pinned
     // Fallout.Common package, read back from the loaded assembly. Marketplaces accept only
-    // three integers, so a preview (X.Y.Z-preview.N) maps to X.Y.N and is marked pre-release;
-    // a stable release (X.Y.Z) is used verbatim.
+    // three integers, so major.minor come from the framework release line and the third is
+    // whatever counter moves within it:
+    //
+    //   10.4.0.15+f16e0f1441  -> 10.4.15  (stable)      third = the git height
+    //   10.4.0-rc.5           -> 10.4.5   (pre-release)  third = the prerelease counter
+    //
+    // Nerdbank.GitVersioning stamps stable builds with a four-component version, so the
+    // height has to be picked out explicitly — returning the release verbatim would emit
+    // 10.4.0.15, which is not valid semver and fails marketplace validation.
     static (string Version, bool PreRelease) FrameworkVersion()
     {
         var info = typeof(FalloutBuild).Assembly
@@ -71,13 +78,15 @@ class Build : FalloutBuild
 
         var core = info.Split('+')[0];
         var dash = core.IndexOf('-');
-        if (dash < 0)
-            return (core, false);
+        var preRelease = dash >= 0;
 
-        var parts = core[..dash].Split('.');
+        var parts = (preRelease ? core[..dash] : core).Split('.');
         var major = parts.ElementAtOrDefault(0) ?? "0";
         var minor = parts.ElementAtOrDefault(1) ?? "0";
-        var height = core[(dash + 1)..].Split('.').FirstOrDefault(p => int.TryParse(p, out _)) ?? "0";
-        return ($"{major}.{minor}.{height}", true);
+        var height = (preRelease
+            ? core[(dash + 1)..].Split('.').FirstOrDefault(p => int.TryParse(p, out _))
+            : parts.ElementAtOrDefault(3)) ?? "0";
+
+        return ($"{major}.{minor}.{height}", preRelease);
     }
 }
