@@ -1,10 +1,23 @@
-# Publishes the extension to the VS Marketplace and Open VSX, and attaches the
-# .vsix to the GitHub Release. Fires on a version tag matching the version the
-# build stamps from the pinned framework (e.g. v10.4.15 for Fallout 10.4.0).
+# Builds the extension, and depending on how it was triggered, releases it.
 #
 # Dogfood: the actual build/package/publish is a Fallout build (build/Build.cs),
 # invoked here via ./build.sh. This workflow only provisions the toolchains and
 # passes the marketplace tokens through the environment.
+#
+# Three paths, deliberately separated so a release candidate can never reach a
+# marketplace:
+#
+#   workflow_dispatch          -> package only, plus a credential check. Dry-run.
+#   tag v1.2.3-rc.4            -> package, attach the .vsix to a GitHub PRE-release.
+#                                 Nothing is published to any marketplace.
+#   tag v1.2.3                 -> package, publish to VS Marketplace + Open VSX,
+#                                 attach the .vsix to a GitHub release. Gated on the
+#                                 'marketplace' environment, so it needs an approval.
+#
+# On RC versions: the VS Marketplace rejects semver prerelease versions outright
+# (vsce throws on '10.4.15-rc.1'), so the .vsix an RC tag produces is versioned
+# with plain integers and carries a pre-release bit in its manifest instead. The
+# rc suffix lives only on the git tag and the GitHub release.
 #
 # Required repository secrets:
 #   VSCE_PAT   - Azure DevOps PAT, scope Marketplace > Manage (VS Marketplace)
@@ -17,7 +30,10 @@ name: publish
 on:
   push:
     tags:
-      - 'v*'
+      # Patterns must match the whole ref, so a stable tag cannot match the rc
+      # pattern or vice versa. Anything else (v10.4, v10.4.15-beta) triggers nothing.
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+'
   # Manual dry-run: restore + compile + package, WITHOUT publishing. Validates the
   # toolchain and secrets before tagging.
   workflow_dispatch:
@@ -26,8 +42,11 @@ permissions:
   contents: write
 
 jobs:
-  publish:
+  # Always runs. Produces the .vsix every downstream job consumes.
+  package:
     runs-on: ubuntu-latest
+    outputs:
+      is-rc: ${{ steps.classify.outputs.is-rc }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,13 +56,23 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
-      # Tag push -> Publish (both registries). Manual dispatch -> Pack only (dry-run).
-      - name: 'Fallout build'
-        run: ./build.sh ${{ github.event_name == 'push' && 'Publish' || 'Pack' }}
+
+      - name: Classify the trigger
+        id: classify
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" && "${{ github.ref_name }}" == *-rc.* ]]; then
+            echo 'is-rc=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'is-rc=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      # An rc tag marks the package as a marketplace pre-release. Fallout resolves
+      # parameters from the environment, so PreRelease is passed that way.
+      - name: 'Fallout build (Pack)'
+        run: ./build.sh Pack
         env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-          # ovsx reads OVSX_PAT from the environment; our secret is named OVSX_TOKEN.
-          OVSX_PAT: ${{ secrets.OVSX_TOKEN }}
+          PreRelease: ${{ steps.classify.outputs.is-rc }}
+
       # Dry-run only: prove the marketplace credentials + publisher/namespace align
       # before a real tag, without publishing anything.
       - name: 'Verify publish credentials'
@@ -54,8 +83,66 @@ jobs:
         run: |
           npx vsce verify-pat fallout
           npx ovsx verify-pat fallout
-      - name: Attach .vsix to the GitHub Release
-        if: github.event_name == 'push'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fallout-vsix
+          path: fallout.vsix
+          if-no-files-found: error
+
+  # Release candidate: a GitHub pre-release only. No marketplace involvement, so the
+  # version number stays free for the eventual stable publish.
+  prerelease:
+    needs: package
+    if: github.ref_type == 'tag' && needs.package.outputs.is-rc == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: fallout-vsix
+      - name: 'Create GitHub pre-release'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${GITHUB_REF_NAME}" fallout.vsix --clobber
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" \
+            --prerelease \
+            --verify-tag \
+            --title "$TAG" \
+            --notes 'Release candidate. Not published to the VS Marketplace or Open VSX — install the attached .vsix via "Extensions: Install from VSIX...".' \
+            fallout.vsix \
+          || gh release upload "$TAG" fallout.vsix --clobber
+
+  # Stable release. Requires an approval on the 'marketplace' environment, so a tag
+  # push alone cannot publish. Re-runs the Fallout chain so the published bits are
+  # built fresh from the tag.
+  publish:
+    needs: package
+    if: github.ref_type == 'tag' && needs.package.outputs.is-rc == 'false'
+    runs-on: ubuntu-latest
+    environment: marketplace
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: 'Fallout build (Publish)'
+        run: ./build.sh Publish
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          # ovsx reads OVSX_PAT from the environment; our secret is named OVSX_TOKEN.
+          OVSX_PAT: ${{ secrets.OVSX_TOKEN }}
+
+      - name: 'Create GitHub release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" --verify-tag --title "$TAG" --generate-notes fallout.vsix \
+          || gh release upload "$TAG" fallout.vsix --clobber

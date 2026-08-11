@@ -17,6 +17,16 @@ class Build : FalloutBuild
 {
     public static int Main() => Execute<Build>(x => x.Pack);
 
+    // Marks the packaged extension as a marketplace pre-release. The VS Marketplace rejects
+    // semver prerelease versions outright — `vsce` throws on `10.4.15-rc.1` — so a release
+    // candidate is an ordinary three-integer version carrying a pre-release bit in the VSIX
+    // manifest (Microsoft.VisualStudio.Code.PreRelease), set at package time.
+    //
+    // Deliberately independent of the framework's own version state: the extension needs to
+    // be able to cut an RC while the Fallout it targets is already GA.
+    [Parameter("Mark the packaged extension as a marketplace pre-release")]
+    readonly bool PreRelease;
+
     Target Restore => _ => _
         .Executes(() =>
         {
@@ -34,7 +44,9 @@ class Build : FalloutBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            var (version, preRelease) = FrameworkVersion();
+            var (version, frameworkPreRelease) = FrameworkVersion();
+            // Either an explicitly requested RC, or a build against a not-yet-GA framework.
+            var preRelease = PreRelease || frameworkPreRelease;
             Serilog.Log.Information("Packaging extension as {Version} (pre-release: {PreRelease})", version, preRelease);
             Npm(
                 $"run package -- {version} --no-update-package-json --no-git-tag-version"
