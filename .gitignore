@@ -3,7 +3,7 @@ out/
 *.vsix
 .vscode-test/
 
-# Fallout build
+# Fallout build (build/ is the build project, plugins/ the Fallout plugins it consumes)
 .fallout/temp/
-build/bin/
-build/obj/
+bin/
+obj/

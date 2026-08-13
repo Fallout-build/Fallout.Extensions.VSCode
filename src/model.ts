@@ -39,8 +39,8 @@ const warned = new Set<string>();
 
 /**
  * Versioning contract: the extension's major.minor track the Fallout framework
- * (calendar versioning, major = year); the patch moves independently. The schema
- * `version` is the hard gate, the major.minor comparison a drift warning.
+ * release line (e.g. 10.4.x against Fallout 10.4); the patch moves independently.
+ * The schema `version` is the hard gate, the major.minor comparison a drift warning.
  */
 export function checkCompatibility(graph: BuildGraph, extensionVersion: string): void {
     let message: string | undefined;

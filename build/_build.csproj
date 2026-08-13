@@ -13,7 +13,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fallout.Common" Version="2026.1.0-preview.104.g6583d78d2c" />
+    <PackageReference Include="Fallout.Common" Version="10.4.0" />
+    <!-- Versioning tool, resolved out of the package folder by [NuGetTool]. Downloaded rather
+         than referenced: it is a CLI the build shells out to, not a library it compiles against. -->
+    <PackageDownload Include="nbgv" Version="[3.10.91]" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The vsce/ovsx toolchain, as a Fallout plugin. ProjectReference while the surface
+         settles; swap for a PackageReference once it is published to a feed. -->
+    <ProjectReference Include="../plugins/Fallout.Vsce/Fallout.Vsce.csproj" />
   </ItemGroup>
 
 </Project>

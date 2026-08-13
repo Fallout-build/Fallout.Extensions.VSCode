@@ -2,7 +2,7 @@
     "name": "fallout",
     "displayName": "Fallout",
     "description": "Explore, run, and visualize your Fallout (NUKE successor) build targets from VS Code.",
-    "version": "2026.1.0",
+    "version": "0.0.0",
     "publisher": "fallout",
     "license": "MIT",
     "icon": "media/icon.png",
@@ -22,10 +22,10 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/Fallout-build/fallout-vscode.git"
+        "url": "https://github.com/Fallout-build/Fallout.Extensions.VSCode.git"
     },
     "bugs": {
-        "url": "https://github.com/Fallout-build/fallout-vscode/issues"
+        "url": "https://github.com/Fallout-build/Fallout.Extensions.VSCode/issues"
     },
     "homepage": "https://fallout.build",
     "main": "./out/extension.js",
@@ -132,10 +132,7 @@
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "package": "vsce package --out fallout.vsix",
-        "publish:vsce": "vsce publish --packagePath fallout.vsix",
-        "publish:ovsx": "ovsx publish fallout.vsix"
+        "watch": "tsc -watch -p ./"
     },
     "dependencies": {
         "mermaid": "^11.4.1"

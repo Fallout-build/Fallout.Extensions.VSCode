@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    First-party Fallout plugin: the VS Code extension toolchain (vsce + ovsx).
+
+    Deliberately NOT in the Fallout repo. This is the pilot for shipping provider
+    integrations as plugins on top of the framework rather than in-tree components
+    (ADR-0001 calls Octopus the first such plugin; this is the smaller sibling that
+    proves the shape first). Referenced from build/_build.csproj as a ProjectReference
+    while the surface settles; packable so it can be extracted to its own feed
+    without a rewrite.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>false</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <UseArtifactsOutput>false</UseArtifactsOutput>
+    <!-- CS0649: settings properties are assigned through the options builder, not directly. -->
+    <NoWarn>CS0649;CA1050;CA1822</NoWarn>
+
+    <PackageId>Fallout.Vsce</PackageId>
+    <Description>Fallout build components and tool wrappers for the VS Code extension toolchain (vsce, ovsx).</Description>
+    <Authors>Fallout.build</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Fallout-build/Fallout.Extensions.VSCode</PackageProjectUrl>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Fallout.Common only: the components here mirror Fallout.Components' shape but do not
+         depend on it, so a consumer can take this plugin without pulling that package in. -->
+    <PackageReference Include="Fallout.Common" Version="10.4.0" />
+  </ItemGroup>
+
+</Project>
