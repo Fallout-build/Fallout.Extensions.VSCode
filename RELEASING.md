@@ -63,7 +63,7 @@ VS Code will not auto-update a manually installed extension — it only tracks v
 Two ways to get real automatic updates, if that ever becomes worth the cost:
 
 - **Marketplace pre-release channel.** The native mechanism: VS Code offers *"Switch to Pre-Release Version"* and updates it like anything else. Requires an actual marketplace presence. Note the version-burning concern doesn't apply to a preview stream — the patch is a git height, so every build has a unique number and stable is always a later height.
-- **A self-hosted gallery at `gallery.fallout.build`** — tracked as [#6](https://github.com/Fallout-build/Fallout.Extensions.VSCode/issues/6), with the hosting options and their trade-offs in [Chrison-Homelab/Homelab#409](https://github.com/Chrison-Homelab/Homelab/issues/409). Since registries are already modelled as data in `IPublishVsix`, adding one is a target entry rather than a new pipeline.
+- **A self-hosted gallery at `gallery.fallout.build`** — tracked as [#6](https://github.com/Fallout-build/Fallout.Extensions.VSCode/issues/6), with hosting options and trade-offs in [Chrison-Homelab/Homelab#409](https://github.com/Chrison-Homelab/Homelab/issues/409). Candidates are Microsoft's own [Private Marketplace](https://github.com/microsoft/vsmarketplace/blob/main/privatemarketplace/latest/README.md) (stateless container, configured by supported device-management policy, but every consumer needs a Copilot Business/Enterprise seat), `coder/code-marketplace`, or self-hosted Open VSX. Since registries are already modelled as data in `IPublishVsix`, adding one is a target entry rather than a new pipeline.
 
 ## Cutting a release candidate
 
