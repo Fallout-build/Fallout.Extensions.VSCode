@@ -1,6 +1,9 @@
 # Changelog
 
-## 10.4.16
+## Unreleased
+
+Renamed to the computed version when the release is cut — the patch component is a
+git height, so it is not knowable while the entry is being written. See RELEASING.md.
 
 Initial release, built against Fallout 10.4.0 — the release that emits
 `build-graph.json` on build initialization, which everything below depends on.

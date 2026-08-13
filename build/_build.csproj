@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <PackageReference Include="Fallout.Common" Version="10.4.0" />
-    <PackageReference Include="Fallout.Components" Version="10.4.0" />
     <!-- Versioning tool, resolved out of the package folder by [NuGetTool]. Downloaded rather
          than referenced: it is a CLI the build shells out to, not a library it compiles against. -->
     <PackageDownload Include="nbgv" Version="[3.10.91]" />

@@ -30,8 +30,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Fallout.Common only: the components here mirror Fallout.Components' shape but do not
+         depend on it, so a consumer can take this plugin without pulling that package in. -->
     <PackageReference Include="Fallout.Common" Version="10.4.0" />
-    <PackageReference Include="Fallout.Components" Version="10.4.0" />
   </ItemGroup>
 
 </Project>

@@ -40,11 +40,16 @@ A tag push **never** reaches a marketplace. Promotion is deliberate: set the fla
 
 ## Cutting a release candidate
 
+The patch component is a git height, so the number isn't knowable while you're writing the changelog entry — `CHANGELOG.md`'s top section stays `## Unreleased` until you cut, then gets renamed to whatever `nbgv` computes.
+
 ```bash
 git switch main && git pull --ff-only
-dotnet nbgv get-version          # confirm the number you expect
+dotnet nbgv get-version          # the number this release will carry
+# rename CHANGELOG.md's "## Unreleased" heading to that version, commit
 gh release create v10.4.16-rc.1 --target main --prerelease --generate-notes
 ```
+
+Note that the changelog commit itself bumps the height if it touches a path in `version.json`'s `pathFilters`. Check `nbgv get-version` once more after committing, before tagging.
 
 The tag push builds the `.vsix` with the pre-release bit set and attaches it to a GitHub pre-release. Install it with **Extensions: Install from VSIX…** to dogfood.
 
