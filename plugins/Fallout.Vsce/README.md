@@ -32,13 +32,10 @@ class Build : FalloutBuild, IPublishVsix
 
 ```bash
 dotnet fallout PackVsix
-dotnet fallout InstallVsix                        # sideload into the local editor
 dotnet fallout VerifyVsixCredentials              # proves the tokens, publishes nothing
 dotnet fallout PublishVsix
 dotnet fallout PublishVsix --publish-vsix-to open-vsx
 ```
-
-**`CodeTasks`** wraps the `code` CLI that ships with the editor, which is what `InstallVsix` uses to sideload a build that hasn't been published. Point `IHasVsix.CodeToolPath` at `codium` or `cursor` for a fork.
 
 **`MarketplaceVersion`** — the one rule neither the versioning tool nor the registries will enforce for you: three integers, no prerelease. `vsce` throws on `10.4.16-rc.1`, and Nerdbank.GitVersioning stamps stable builds with four components, so both cases get normalised here.
 
@@ -47,8 +44,8 @@ dotnet fallout PublishVsix --publish-vsix-to open-vsx
 - **A version is pre-release or stable, never both.** The bit lives in the VSIX manifest (`Microsoft.VisualStudio.Code.PreRelease`) and is set at *package* time. Publishing `1.2.3` as a pre-release burns that number for good.
 - **`ovsx` ignores `--pre-release` for a prepackaged `.vsix`** — it reads the manifest. Package it correctly; don't rely on the publish flag.
 - **`vsce publish --pre-release` on a `--packagePath` is only an assertion** against the package, not what sets the status.
-- **Tool resolution** prefers `node_modules/.bin` over `PATH` for `vsce`/`ovsx`, since both are conventionally dev dependencies. `code` is a plain `PATH` lookup — it ships with the editor. Override via `IHasVsix.VsceToolPath` / `OvsxToolPath` / `CodeToolPath`.
-- **A sideloaded extension never auto-updates.** VS Code only tracks versions for extensions it got from a gallery, so `InstallVsix` is a one-shot install — re-run it to move to a newer build.
+- **Tool resolution** prefers `node_modules/.bin` over `PATH`, since both CLIs are conventionally dev dependencies. Override via `IHasVsix.VsceToolPath` / `OvsxToolPath`.
+- **Installing is out of scope on purpose.** This plugin packages and publishes; it does not touch the local editor. A manually installed `.vsix` never auto-updates anyway, since VS Code only tracks versions for extensions it got from a gallery.
 - **Tokens** are left to the CLIs' own environment variables (`VSCE_PAT`, `OVSX_PAT`) unless you set `VsixPublishTarget.Pat`, so they stay out of process argument lists.
 
 ## Status

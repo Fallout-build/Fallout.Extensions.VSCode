@@ -52,14 +52,18 @@ gh release download preview -R Fallout-build/Fallout.Extensions.VSCode -p '*.vsi
 code --install-extension fallout.vsix --force
 ```
 
-The download URL is stable, so that pair of commands is the whole update story — no run IDs to hunt, no expiry. From a clone, `dotnet fallout InstallVsix` builds your working tree and installs that instead.
+The download URL is stable, so that pair of commands is the whole update story — no run IDs to hunt, no expiry. Each run also uploads the same `.vsix` as a workflow artifact, which is the fixed record of what a given commit produced; the rolling asset can't be, since the next push replaces it.
+
+Building locally, `dotnet fallout PackVsix` produces the `.vsix` and you install it the same way. Installing is deliberately a manual step — the build never touches your editor.
 
 ### Why this isn't auto-updating
 
-VS Code will not auto-update a sideloaded extension — it only tracks versions for extensions it got from a gallery. Two ways to get real automatic updates, both with a cost:
+VS Code will not auto-update a manually installed extension — it only tracks versions for extensions it got from a gallery, and this channel has no gallery. Manual download-and-install is the deliberate trade-off; the build never touches your editor.
 
-- **Marketplace pre-release channel.** The native mechanism: VS Code offers *"Switch to Pre-Release Version"* and updates it like anything else. Requires an actual marketplace presence. Worth noting the version-burning concern doesn't apply here — the patch is a git height, so every build has a unique number and stable is always a later height than any preview.
-- **Self-hosted Open VSX**, with `product.json`'s `extensionsGallery` repointed at it. Genuinely works, but it's Postgres + Elasticsearch + the server, and `product.json` lives in a version-hashed directory that every VS Code update replaces.
+Two ways to get real automatic updates, if that ever becomes worth the cost:
+
+- **Marketplace pre-release channel.** The native mechanism: VS Code offers *"Switch to Pre-Release Version"* and updates it like anything else. Requires an actual marketplace presence. Note the version-burning concern doesn't apply to a preview stream — the patch is a git height, so every build has a unique number and stable is always a later height.
+- **A self-hosted gallery at `gallery.fallout.build`** — tracked as [#6](https://github.com/Fallout-build/Fallout.Extensions.VSCode/issues/6), with the hosting options and their trade-offs in [Chrison-Homelab/Homelab#409](https://github.com/Chrison-Homelab/Homelab/issues/409). Since registries are already modelled as data in `IPublishVsix`, adding one is a target entry rather than a new pipeline.
 
 ## Cutting a release candidate
 
