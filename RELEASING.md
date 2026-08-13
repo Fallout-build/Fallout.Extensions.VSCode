@@ -32,11 +32,34 @@ GitHub is the pre-stage; each marketplace is a promotion target with its own env
 
 | Channel | Trigger | Gating |
 |---|---|---|
+| `preview` (rolling) | every push to `main` | none |
 | `github-releases` | any release tag | none |
 | `vs-marketplace` | `workflow_dispatch` opt-in flag | flag + approval |
 | `open-vsx` | `workflow_dispatch` opt-in flag | flag + approval |
 
 A tag push **never** reaches a marketplace. Promotion is deliberate: set the flag, then approve the environment — two independent layers, matching how Fallout gates nuget.org.
+
+## The preview channel
+
+Every push to `main` builds a `.vsix` and replaces the asset on a rolling `preview` GitHub pre-release (`preview.yml`). It's the counterpart to the framework's per-commit `-preview` packages — reshaped because GitHub Packages doesn't speak the VS Code gallery protocol and neither marketplace accepts a semver prerelease.
+
+The `preview` tag deliberately doesn't match `v*`, so it neither triggers `publish.yml` nor falls under the `v*` tag-protection ruleset — which matters, because the workflow force-moves it on every push.
+
+### Installing a preview
+
+```bash
+gh release download preview -R Fallout-build/Fallout.Extensions.VSCode -p '*.vsix' --clobber
+code --install-extension fallout.vsix --force
+```
+
+The download URL is stable, so that pair of commands is the whole update story — no run IDs to hunt, no expiry. From a clone, `dotnet fallout InstallVsix` builds your working tree and installs that instead.
+
+### Why this isn't auto-updating
+
+VS Code will not auto-update a sideloaded extension — it only tracks versions for extensions it got from a gallery. Two ways to get real automatic updates, both with a cost:
+
+- **Marketplace pre-release channel.** The native mechanism: VS Code offers *"Switch to Pre-Release Version"* and updates it like anything else. Requires an actual marketplace presence. Worth noting the version-burning concern doesn't apply here — the patch is a git height, so every build has a unique number and stable is always a later height than any preview.
+- **Self-hosted Open VSX**, with `product.json`'s `extensionsGallery` repointed at it. Genuinely works, but it's Postgres + Elasticsearch + the server, and `product.json` lives in a version-hashed directory that every VS Code update replaces.
 
 ## Cutting a release candidate
 
