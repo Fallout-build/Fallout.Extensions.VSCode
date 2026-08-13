@@ -29,7 +29,10 @@ using Fallout.Vsce;
     ConcurrencyCancelInProgress = true,
     CheckoutRef = "${{ github.head_ref }}",
     OnPullRequestBranches = [MainBranch],
-    OnPullRequestExcludePaths = ["**/*.md", ".github/**", "!.github/workflows/**"],
+    // Kept to a single pattern so build-skip.yml can express the exact inverse. Anything
+    // more clever here (negations, directory carve-outs) makes the two sets drift, and a
+    // gap between them means a PR blocked forever on a required check that never fires.
+    OnPullRequestExcludePaths = ["**/*.md"],
     InvokedTargets = [nameof(IPackVsix.PackVsix)],
     PublishArtifacts = false)]
 partial class Build
