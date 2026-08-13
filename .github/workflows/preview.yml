@@ -1,0 +1,137 @@
+# Hand-written (not auto-generated). The "preview" channel — per-commit builds of main.
+#
+# Counterpart to the framework repo's publish-packages-preview.yml, which pushes a
+# -preview prerelease to GitHub Packages on every commit to main. The extension can't
+# do the same thing: GitHub Packages does not speak the VS Code gallery protocol, and
+# neither marketplace accepts a semver prerelease version. So the preview channel here
+# is a ROLLING GitHub pre-release whose asset is replaced on every push.
+#
+# Why a rolling release rather than workflow artifacts:
+#   - the download URL is stable, so installing is one command with no run-hunting:
+#
+#       gh release download preview -R Fallout-build/Fallout.Extensions.VSCode -p '*.vsix' --clobber
+#       code --install-extension fallout.vsix
+#
+#     or, from a clone:  dotnet fallout InstallVsix
+#   - workflow artifacts expire and need the run ID to fetch.
+#
+# The tag is `preview`, deliberately NOT matching `v*`. Two consequences, both wanted:
+# publish.yml (which triggers on v* only) does not fire, and the v* tag-protection
+# ruleset does not apply to a tag this workflow force-moves on every push.
+#
+# The .vsix is marked as a marketplace pre-release, so if it is ever sideloaded next to
+# a stable build VS Code shows it as pre-release rather than silently as a release.
+#
+# NOTE: this publishes NOTHING to any marketplace. It is the GitHub pre-stage only.
+name: preview
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Never cancel in progress: a cancelled run could leave the rolling release holding a
+  # half-uploaded asset. Queue instead, so the newest push wins by finishing last.
+  group: preview
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    name: preview
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    environment:
+      name: github-releases
+      url: https://github.com/Fallout-build/Fallout.Extensions.VSCode/releases/tag/preview
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0           # Nerdbank.GitVersioning needs full history
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      # PublicRelease: main IS in version.json's publicReleaseRefSpec, so this is only
+      # belt-and-braces for the workflow_dispatch case on a detached checkout.
+      - name: 'Fallout build (PackVsix)'
+        run: ./build.sh PackVsix
+        env:
+          PreRelease: true
+          PublicRelease: true
+
+      - name: 'Read the packaged version'
+        id: version
+        run: |
+          set -euo pipefail
+          # Take it from the VSIX manifest rather than recomputing — this reports what was
+          # actually built, so a version bug shows up here instead of being masked.
+          #
+          # Scoped to the <Identity> element on purpose: the FIRST Version= attribute in the
+          # manifest is <PackageManifest Version="2.0.0">, the manifest schema version, so a
+          # naive "first match" reports 2.0.0 for every build.
+          unzip -p fallout.vsix extension.vsixmanifest > manifest.xml
+          VERSION=$(grep -o '<Identity[^>]*' manifest.xml | grep -o 'Version="[^"]*"' | cut -d'"' -f2)
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not read the version from the VSIX manifest."
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Packaged version: $VERSION"
+
+      - name: 'Update the rolling preview release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          NOTES=$(cat <<EOF
+          Rolling preview build of \`main\` — **replaced on every push**, so this release is not a
+          durable reference. For a fixed version, use a tagged release instead.
+
+          | | |
+          |---|---|
+          | Version | \`$VERSION\` |
+          | Commit | ${GITHUB_SHA:0:7} |
+          | Built | $(date -u '+%Y-%m-%d %H:%M UTC') |
+
+          Not published to any marketplace. Install with:
+
+          \`\`\`bash
+          gh release download preview -R ${GITHUB_REPOSITORY} -p '*.vsix' --clobber
+          code --install-extension fallout.vsix
+          \`\`\`
+
+          From a clone of the repo, \`dotnet fallout InstallVsix\` builds and installs your
+          working tree instead.
+          EOF
+          )
+
+          # Move the tag to this commit. The release keeps its identity; only the target
+          # and asset change, so the download URL stays valid.
+          git tag -f preview
+          git push -f origin refs/tags/preview
+
+          if gh release view preview > /dev/null 2>&1; then
+            gh release edit preview --target "$GITHUB_SHA" --notes "$NOTES" --prerelease
+            gh release upload preview fallout.vsix --clobber
+          else
+            gh release create preview \
+              --title 'Preview (rolling)' \
+              --target "$GITHUB_SHA" \
+              --notes "$NOTES" \
+              --prerelease \
+              fallout.vsix
+          fi

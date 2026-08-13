@@ -38,6 +38,13 @@ public interface IHasVsix : IFalloutBuild
 
     /// <summary>Path to the <c>ovsx</c> CLI.</summary>
     string OvsxToolPath => ResolveNodeTool(OvsxTasks.PathExecutable);
+
+    /// <summary>
+    /// Path to the <c>code</c> CLI. Not a node tool — it ships with the editor, so this is a
+    /// plain <c>PATH</c> lookup. Override for a fork (<c>codium</c>, <c>cursor</c>) or for an
+    /// install that isn't on <c>PATH</c>.
+    /// </summary>
+    string CodeToolPath => CodeTasks.PathExecutable;
 }
 
 /// <summary>
@@ -94,5 +101,25 @@ public interface IPackVsix : IHasVsix
                 .EnableNoUpdatePackageJson()
                 .EnableNoGitTagVersion()
                 .SetPreRelease(VsixPreRelease ? true : (bool?)null));
+        });
+
+    /// <summary>
+    /// Sideloads the freshly packaged <c>.vsix</c> into the local editor — the way to dogfood a
+    /// build that hasn't been published. VS Code does not auto-update a sideloaded extension,
+    /// so re-run this to move to a newer build.
+    /// </summary>
+    Target InstallVsix => _ => _
+        .DependsOn(PackVsix)
+        .Executes(() =>
+        {
+            Serilog.Log.Information("Installing {File} into the local editor.", VsixFile.Name);
+            CodeTasks.CodeInstallExtension(_ => _
+                .SetProcessToolPath(CodeToolPath)
+                .SetProcessWorkingDirectory(VsixDirectory)
+                .SetExtension(VsixFile)
+                // Without --force, installing over the same version is a no-op, which makes an
+                // iterate-and-reinstall loop silently reinstall nothing.
+                .EnableForce());
+            Serilog.Log.Information("Installed. Reload the window (Developer: Reload Window) to pick it up.");
         });
 }
