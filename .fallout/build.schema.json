@@ -24,12 +24,11 @@
     "ExecutableTarget": {
       "type": "string",
       "enum": [
-        "Compile",
-        "Pack",
-        "Publish",
-        "PublishMarketplace",
-        "PublishOpenVsx",
-        "Restore"
+        "CompileVsix",
+        "PackVsix",
+        "PublishVsix",
+        "RestoreVsix",
+        "VerifyVsixCredentials"
       ]
     },
     "Verbosity": {
@@ -113,6 +112,13 @@
         "PreRelease": {
           "type": "boolean",
           "description": "Mark the packaged extension as a marketplace pre-release"
+        },
+        "PublishVsixTo": {
+          "type": "array",
+          "description": "Publish only to these named registries (default: all configured VsixPublishTargets)",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },

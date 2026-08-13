@@ -2,7 +2,7 @@
     "name": "fallout",
     "displayName": "Fallout",
     "description": "Explore, run, and visualize your Fallout (NUKE successor) build targets from VS Code.",
-    "version": "10.4.15",
+    "version": "0.0.0",
     "publisher": "fallout",
     "license": "MIT",
     "icon": "media/icon.png",
@@ -132,10 +132,7 @@
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "package": "vsce package --out fallout.vsix",
-        "publish:vsce": "vsce publish --packagePath fallout.vsix",
-        "publish:ovsx": "ovsx publish fallout.vsix"
+        "watch": "tsc -watch -p ./"
     },
     "dependencies": {
         "mermaid": "^11.4.1"

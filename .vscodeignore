@@ -11,9 +11,11 @@ tsconfig.json
 # Fallout build scaffold — build/publish tooling, not part of the shipped extension.
 .fallout/**
 build/**
+plugins/**
 .config/**
 global.json
 nuget.config
+version.json
 build.ps1
 build.sh
 

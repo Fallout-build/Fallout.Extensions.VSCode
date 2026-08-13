@@ -1,104 +1,87 @@
-using System.Linq;
+using System.Collections.Generic;
 using System.Reflection;
 using Fallout.Common;
-using Fallout.Common.IO;
-using static Fallout.Common.Tools.Npm.NpmTasks;
+using Fallout.Common.Tools.NerdbankGitVersioning;
+using Fallout.Vsce;
 
-// Dogfood: the extension's own build/publish pipeline is a Fallout build. It drives the
-// Node toolchain (npm scripts wrapping tsc / vsce / ovsx) rather than reimplementing it —
-// Fallout as a general orchestrator, not just a .NET build tool.
+// Dogfood: the extension's own build/publish pipeline is a Fallout build, and the vsce/ovsx
+// toolchain it drives is a Fallout plugin (plugins/Fallout.Vsce) rather than anything baked
+// into the framework. Fallout as a general orchestrator, not just a .NET build tool.
 //
-//   dotnet fallout Pack       -> produces fallout.vsix
-//   dotnet fallout Publish    -> publishes to VS Marketplace + Open VSX
+//   dotnet fallout PackVsix                  -> produces fallout.vsix
+//   dotnet fallout VerifyVsixCredentials     -> proves the tokens work, publishes nothing
+//   dotnet fallout PublishVsix               -> publishes to every configured registry
+//   dotnet fallout PublishVsix --publish-vsix-to open-vsx   -> just that one
 //
-// Marketplace tokens are read from the environment by vsce (VSCE_PAT) and ovsx (OVSX_PAT);
-// this build never handles them directly.
-class Build : FalloutBuild
+// Registry tokens are read from the environment by the CLIs themselves (VSCE_PAT / OVSX_PAT);
+// this build never handles them, so they stay out of process argument lists and logs.
+class Build : FalloutBuild, IPublishVsix
 {
-    public static int Main() => Execute<Build>(x => x.Pack);
+    public static int Main() => Execute<Build>(x => ((IPackVsix)x).PackVsix);
 
-    // Marks the packaged extension as a marketplace pre-release. The VS Marketplace rejects
-    // semver prerelease versions outright — `vsce` throws on `10.4.15-rc.1` — so a release
-    // candidate is an ordinary three-integer version carrying a pre-release bit in the VSIX
-    // manifest (Microsoft.VisualStudio.Code.PreRelease), set at package time.
-    //
-    // Deliberately independent of the framework's own version state: the extension needs to
-    // be able to cut an RC while the Fallout it targets is already GA.
+    /// <summary>Publisher on the VS Marketplace and namespace on Open VSX.</summary>
+    const string Publisher = "fallout";
+
+    /// <summary>
+    /// Marks this build's package as a marketplace pre-release. Kept independent of the
+    /// version because a marketplace version cannot express prerelease-ness: a release
+    /// candidate is a plain triple plus a manifest bit. Set by the rc path in CI.
+    /// </summary>
     [Parameter("Mark the packaged extension as a marketplace pre-release")]
     readonly bool PreRelease;
 
-    Target Restore => _ => _
-        .Executes(() =>
+    // Versioning matches the framework's own: Nerdbank.GitVersioning over version.json.
+    [NerdbankGitVersioning] readonly NerdbankGitVersioning Versioning;
+
+    bool IPackVsix.VsixPreRelease => PreRelease;
+
+    string IPackVsix.VsixVersion
+    {
+        get
         {
-            Npm("ci", workingDirectory: RootDirectory);
-        });
+            var (version, _) = MarketplaceVersion.FromNerdbankGitVersioning(Versioning, PreRelease);
+            AssertFrameworkLineMatches(version);
+            return version;
+        }
+    }
 
-    Target Compile => _ => _
-        .DependsOn(Restore)
-        .Executes(() =>
+    IEnumerable<VsixPublishTarget> IPublishVsix.VsixPublishTargets =>
+    [
+        new VsixPublishTarget
         {
-            Npm("run compile", workingDirectory: RootDirectory);
-        });
-
-    Target Pack => _ => _
-        .DependsOn(Compile)
-        .Executes(() =>
+            Name = "vs-marketplace",
+            Registry = VsixRegistry.VisualStudioMarketplace,
+            Publisher = Publisher
+        },
+        new VsixPublishTarget
         {
-            var (version, frameworkPreRelease) = FrameworkVersion();
-            // Either an explicitly requested RC, or a build against a not-yet-GA framework.
-            var preRelease = PreRelease || frameworkPreRelease;
-            Serilog.Log.Information("Packaging extension as {Version} (pre-release: {PreRelease})", version, preRelease);
-            Npm(
-                $"run package -- {version} --no-update-package-json --no-git-tag-version"
-                + (preRelease ? " --pre-release" : ""),
-                workingDirectory: RootDirectory);
-        });
+            Name = "open-vsx",
+            Registry = VsixRegistry.OpenVsx,
+            Publisher = Publisher
+        }
+    ];
 
-    Target PublishMarketplace => _ => _
-        .DependsOn(Pack)
-        .Executes(() =>
-        {
-            Npm("run publish:vsce", workingDirectory: RootDirectory);
-        });
-
-    Target PublishOpenVsx => _ => _
-        .DependsOn(Pack)
-        .Executes(() =>
-        {
-            Npm("run publish:ovsx", workingDirectory: RootDirectory);
-        });
-
-    Target Publish => _ => _
-        .DependsOn(PublishMarketplace, PublishOpenVsx);
-
-    // The extension version tracks the Fallout framework it was built against — the pinned
-    // Fallout.Common package, read back from the loaded assembly. Marketplaces accept only
-    // three integers, so major.minor come from the framework release line and the third is
-    // whatever counter moves within it:
-    //
-    //   10.4.0.15+f16e0f1441  -> 10.4.15  (stable)      third = the git height
-    //   10.4.0-rc.5           -> 10.4.5   (pre-release)  third = the prerelease counter
-    //
-    // Nerdbank.GitVersioning stamps stable builds with a four-component version, so the
-    // height has to be picked out explicitly — returning the release verbatim would emit
-    // 10.4.0.15, which is not valid semver and fails marketplace validation.
-    static (string Version, bool PreRelease) FrameworkVersion()
+    /// <summary>
+    /// The extension's major.minor are a promise about which Fallout release line it targets —
+    /// README documents it, and model.ts warns the user at runtime when the workspace's
+    /// framework drifts from it. version.json states that line; the pinned Fallout.Common
+    /// package is what the extension was actually built against. Nothing keeps the two in step
+    /// automatically, so bumping one and forgetting the other would ship a version that lies.
+    /// </summary>
+    void AssertFrameworkLineMatches(string version)
     {
         var info = typeof(FalloutBuild).Assembly
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
             ?.InformationalVersion ?? "0.0.0";
 
-        var core = info.Split('+')[0];
-        var dash = core.IndexOf('-');
-        var preRelease = dash >= 0;
+        var framework = MarketplaceVersion.Normalize(info);
 
-        var parts = (preRelease ? core[..dash] : core).Split('.');
-        var major = parts.ElementAtOrDefault(0) ?? "0";
-        var minor = parts.ElementAtOrDefault(1) ?? "0";
-        var height = (preRelease
-            ? core[(dash + 1)..].Split('.').FirstOrDefault(p => int.TryParse(p, out _))
-            : parts.ElementAtOrDefault(3)) ?? "0";
+        var declared = version.Split('.');
+        var actual = framework.Split('.');
 
-        return ($"{major}.{minor}.{height}", preRelease);
+        Assert.True(declared[0] == actual[0] && declared[1] == actual[1],
+            $"Version line mismatch: version.json declares {declared[0]}.{declared[1]}.x but the build "
+            + $"references Fallout {framework}. Update version.json's \"version\" and the pinned "
+            + "Fallout.Common together, or the published extension misstates which framework it targets.");
     }
 }

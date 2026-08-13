@@ -1,0 +1,32 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/main/src/NerdBank.GitVersioning/version.schema.json",
+
+  // major.minor track the Fallout framework release line this extension targets; the third
+  // component is the git height and moves on its own. The build asserts this stays in step
+  // with the pinned Fallout.Common — see Build.cs.
+  //
+  // Unlike the framework, prerelease-ness is NOT expressed here. Both marketplaces reject
+  // semver prerelease versions outright, so a release candidate is a plain triple carrying a
+  // pre-release bit in the VSIX manifest, requested per-build via --pre-release.
+  "version": "10.4",
+
+  // main produces the releasable version directly; there is no separate preview lane, because
+  // the pre-stage is a GitHub pre-release of the same artifact rather than a different feed.
+  "publicReleaseRefSpec": [
+    "^refs/heads/main$",
+    "^refs/heads/release/v\\d+\\.\\d+$"
+  ],
+
+  // The extension shipped its changelog entry as 10.4.15 before versioning moved to NB.GV.
+  // Height restarts from this file's introduction, so without an offset the next build would
+  // compute 10.4.1 and go backwards. Marketplace versions must increase monotonically.
+  "versionHeightOffset": 15,
+
+  "pathFilters": [
+    ":/src",
+    ":/build",
+    ":/plugins",
+    ":/package.json",
+    ":/version.json"
+  ]
+}
