@@ -1,11 +1,11 @@
 # Changelog
 
-## 10.4.15
+## 10.4.16
 
 Initial release, built against Fallout 10.4.0 — the release that emits
 `build-graph.json` on build initialization, which everything below depends on.
-The patch component is the framework's release-branch height, so the extension
-version reads as 10.4.x against the Fallout 10.4 line.
+The `major.minor` track the Fallout release line, so the extension version
+reads as 10.4.x against the Fallout 10.4 line, while the patch moves on its own.
 
 - **Targets view** in the activity bar — lists build targets from `build-graph.json`, showing the default target, unlisted targets, and each target's `depends on` / `runs after` / `triggered by` / `triggers` relations as expandable children.
 - **Run Target** — runs a target in an integrated `Fallout` terminal via `./build.ps1` (Windows) or `./build.sh`.

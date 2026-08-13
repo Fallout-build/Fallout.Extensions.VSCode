@@ -1,0 +1,52 @@
+# Source of truth for the PR label taxonomy, mirroring the Fallout repo's own
+# .github/release.yml so contributors and tooling meet one convention across both.
+#
+# GitHub reads this to auto-generate release notes, grouping merged PRs into the
+# sections below by label. Releases are cut with `gh release create --generate-notes`,
+# so the label you put on a PR is what appears in the release.
+#
+# When raising a PR: apply the one category label that matches the change. A PR with
+# no category label falls through to "Other Changes" — prefer a real category.
+#
+# CHANGELOG.md is a separate, curated artifact: it ships inside the .vsix and is what
+# the marketplace renders on the extension page, so it stays hand-written and
+# user-facing. These notes are the per-release commit-level record.
+changelog:
+  exclude:
+    labels:
+      # skip-changelog: housekeeping with no consumer-facing note (CI, tooling,
+      # internal refactors). Keeps the notes signal-heavy.
+      - skip-changelog
+      # dependencies: dependency bumps — folded out of the notes as noise. Also a
+      # category below, so the label is documented once; the exclude wins.
+      - dependencies
+    authors:
+      - dependabot
+  categories:
+    # breaking-change: removes/renames a command ID, setting, or view ID; drops
+    # support for a VS Code or Fallout version; changes the build-graph contract.
+    - title: "⚠️ Breaking Changes"
+      labels:
+        - breaking-change
+    # enhancement: a new feature or user-facing capability.
+    - title: "✨ New Features"
+      labels:
+        - enhancement
+    # bug: fixes incorrect behavior.
+    - title: "🐛 Bug Fixes"
+      labels:
+        - bug
+    # security: fixes a vulnerability or hardens a security-sensitive surface.
+    - title: "🔒 Security"
+      labels:
+        - security
+    # dependencies: dependency version bumps (excluded above — kept for completeness).
+    - title: "📦 Dependencies"
+      labels:
+        - dependencies
+    # documentation: docs, comments, and agent-instruction changes only.
+    - title: "📖 Documentation"
+      labels:
+        - documentation
+    # Fallback for PRs carrying none of the labels above — don't rely on it.
+    - title: "Other Changes"
