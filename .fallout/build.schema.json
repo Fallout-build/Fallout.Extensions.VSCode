@@ -25,7 +25,6 @@
       "type": "string",
       "enum": [
         "CompileVsix",
-        "InstallVsix",
         "PackVsix",
         "PublishVsix",
         "RestoreVsix",

@@ -71,6 +71,16 @@ jobs:
           PreRelease: true
           PublicRelease: true
 
+      # Per-run copy, alongside the rolling release asset below. The release is the thing
+      # you install from; this is the fixed record of what a specific commit produced,
+      # which the rolling asset can't be since it is replaced on the next push.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: fallout-vsix
+          path: fallout.vsix
+          retention-days: 14
+          if-no-files-found: error
+
       - name: 'Read the packaged version'
         id: version
         run: |
@@ -111,11 +121,11 @@ jobs:
 
           \`\`\`bash
           gh release download preview -R ${GITHUB_REPOSITORY} -p '*.vsix' --clobber
-          code --install-extension fallout.vsix
+          code --install-extension fallout.vsix --force
           \`\`\`
 
-          From a clone of the repo, \`dotnet fallout InstallVsix\` builds and installs your
-          working tree instead.
+          Installing is manual by design — VS Code only auto-updates extensions it got from a
+          gallery, and there is no gallery in this channel. See RELEASING.md.
           EOF
           )
 
