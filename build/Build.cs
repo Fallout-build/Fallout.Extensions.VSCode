@@ -15,7 +15,7 @@ using Fallout.Vsce;
 //
 // Registry tokens are read from the environment by the CLIs themselves (VSCE_PAT / OVSX_PAT);
 // this build never handles them, so they stay out of process argument lists and logs.
-class Build : FalloutBuild, IPublishVsix
+partial class Build : FalloutBuild, IPublishVsix
 {
     public static int Main() => Execute<Build>(x => ((IPackVsix)x).PackVsix);
 

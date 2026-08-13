@@ -25,7 +25,7 @@
     <Description>Fallout build components and tool wrappers for the VS Code extension toolchain (vsce, ovsx).</Description>
     <Authors>Fallout.build</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/Fallout-build/fallout-vscode</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Fallout-build/Fallout.Extensions.VSCode</PackageProjectUrl>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 

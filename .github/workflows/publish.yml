@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: 'Verify tag is reachable from a release branch'
@@ -87,15 +87,15 @@ jobs:
       is-rc: ${{ steps.classify.outputs.is-rc }}
       tag: ${{ steps.classify.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0           # Nerdbank.GitVersioning needs full history
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
@@ -132,7 +132,7 @@ jobs:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
           OVSX_PAT: ${{ secrets.OVSX_TOKEN }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: fallout-vsix
           path: fallout.vsix
@@ -150,10 +150,10 @@ jobs:
       contents: write
     environment:
       name: github-releases
-      url: https://github.com/Fallout-build/fallout-vscode/releases
+      url: https://github.com/Fallout-build/Fallout.Extensions.VSCode/releases
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: fallout-vsix
       - name: 'Create or update the GitHub release'
@@ -194,18 +194,18 @@ jobs:
       name: vs-marketplace
       url: https://marketplace.visualstudio.com/items?itemName=fallout.fallout
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: fallout-vsix
       # --skip PackVsix publishes the exact artifact that was packed and validated,
@@ -229,18 +229,18 @@ jobs:
       name: open-vsx
       url: https://open-vsx.org/extension/fallout/fallout
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: fallout-vsix
       - name: 'Fallout build (PublishVsix → open-vsx)'

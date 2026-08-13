@@ -6,5 +6,5 @@
 <!-- Housekeeping with no user-facing note? Use skip-changelog instead. -->
 <!-- The taxonomy lives in .github/release.yml. -->
 
-<!-- User-facing change? Add a CHANGELOG.md entry too — that file ships inside the -->
-<!-- .vsix and is what the marketplace renders on the extension page. -->
+<!-- The label IS the changelog — there is no CHANGELOG.md to update. -->
+<!-- Write the PR title as the line you'd want to read in the release notes. -->

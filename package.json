@@ -22,10 +22,10 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/Fallout-build/fallout-vscode.git"
+        "url": "https://github.com/Fallout-build/Fallout.Extensions.VSCode.git"
     },
     "bugs": {
-        "url": "https://github.com/Fallout-build/fallout-vscode/issues"
+        "url": "https://github.com/Fallout-build/Fallout.Extensions.VSCode/issues"
     },
     "homepage": "https://fallout.build",
     "main": "./out/extension.js",

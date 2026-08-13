@@ -8,9 +8,11 @@
 # When raising a PR: apply the one category label that matches the change. A PR with
 # no category label falls through to "Other Changes" — prefer a real category.
 #
-# CHANGELOG.md is a separate, curated artifact: it ships inside the .vsix and is what
-# the marketplace renders on the extension page, so it stays hand-written and
-# user-facing. These notes are the per-release commit-level record.
+# This is the ONLY changelog. There is no CHANGELOG.md — a hand-maintained file would
+# duplicate what these labels already record, and its version heading is unknowable in
+# advance anyway (the patch component is a Nerdbank.GitVersioning git height, so the
+# number is not settled until the release is cut). If the marketplace page ever needs
+# a rendered changelog, generate it into the .vsix at pack time from these notes.
 changelog:
   exclude:
     labels:
