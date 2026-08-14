@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { BuildGraph, GraphSource, Relation, Target, checkCompatibility, findGraphFile, loadGraph } from './model';
 import { GraphPanel } from './graphPanel';
 import { goToTarget } from './goToTarget';
+import { RunConfigStore, RunConfigViewProvider } from './runConfig';
 
 const RELATION_LABELS: Record<Relation, string> = {
     dependsOn: 'depends on',
@@ -130,6 +131,7 @@ function runInTerminal(root: string, args: string): void {
 export function activate(context: vscode.ExtensionContext): void {
     const extensionVersion: string = context.extension.packageJSON.version;
     const provider = new FalloutTargetsProvider(extensionVersion);
+    const runConfig = new RunConfigStore(context);
 
     const runTarget = (name: string) => {
         const root = provider.source?.root;
@@ -161,6 +163,7 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.window.registerTreeDataProvider('fallout.build', provider),
         vscode.window.registerTreeDataProvider('fallout.buildExplorer', provider),
         vscode.window.registerTreeDataProvider('fallout.deployment', new DeploymentProvider()),
+        vscode.window.registerWebviewViewProvider('fallout.runConfig', new RunConfigViewProvider(runConfig, context.subscriptions)),
         watcher,
         vscode.commands.registerCommand('fallout.refreshTargets', refreshAll),
         vscode.commands.registerCommand('fallout.runTarget', (item?: TargetItem) => {
