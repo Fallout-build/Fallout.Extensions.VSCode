@@ -30,7 +30,7 @@
     "homepage": "https://fallout.build",
     "main": "./out/extension.js",
     "activationEvents": [
-        "onView:falloutTargets",
+        "onView:fallout.build",
         "workspaceContains:**/.fallout/temp/build-graph.json",
         "workspaceContains:**/.nuke/temp/build-graph.json"
     ],
@@ -47,8 +47,8 @@
         "views": {
             "fallout": [
                 {
-                    "id": "falloutTargets",
-                    "name": "Targets",
+                    "id": "fallout.build",
+                    "name": "Build",
                     "icon": "media/fallout.svg",
                     "contextualTitle": "Fallout"
                 }
@@ -56,7 +56,7 @@
         },
         "viewsWelcome": [
             {
-                "view": "falloutTargets",
+                "view": "fallout.build",
                 "contents": "No Fallout build graph found in this workspace.\nRun the build once to generate `build-graph.json`, then refresh.\n[Plan build (dry run)](command:fallout.planTarget)"
             }
         ],
@@ -96,24 +96,24 @@
             "view/title": [
                 {
                     "command": "fallout.showGraph",
-                    "when": "view == falloutTargets",
+                    "when": "view == fallout.build",
                     "group": "navigation@1"
                 },
                 {
                     "command": "fallout.refreshTargets",
-                    "when": "view == falloutTargets",
+                    "when": "view == fallout.build",
                     "group": "navigation@2"
                 }
             ],
             "view/item/context": [
                 {
                     "command": "fallout.runTarget",
-                    "when": "view == falloutTargets && viewItem == falloutTarget",
+                    "when": "view == fallout.build && viewItem == falloutTarget",
                     "group": "inline@1"
                 },
                 {
                     "command": "fallout.goToTarget",
-                    "when": "view == falloutTargets && viewItem == falloutTarget",
+                    "when": "view == fallout.build && viewItem == falloutTarget",
                     "group": "inline@2"
                 }
             ],
