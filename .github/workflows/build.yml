@@ -19,7 +19,9 @@ name: build
 on:
   pull_request:
     branches:
+      - develop
       - main
+      - 'support/*'
     paths-ignore:
       - '**/*.md'
 

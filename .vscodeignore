@@ -18,8 +18,8 @@ nuget.config
 version.json
 build.ps1
 build.sh
-# Maintainer-facing; the marketplace page renders README.md + CHANGELOG.md only.
-RELEASING.md
+# Maintainer-facing; the marketplace page renders README.md only.
+docs/**
 
 # Ship only Mermaid's self-contained UMD bundle (loaded by the graph webview via a
 # classic <script> tag), not its entire dependency tree or the code-split ESM build.

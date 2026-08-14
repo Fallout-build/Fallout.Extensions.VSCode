@@ -10,11 +10,15 @@
   // pre-release bit in the VSIX manifest, requested per-build via --pre-release.
   "version": "10.4",
 
-  // main produces the releasable version directly; there is no separate preview lane, because
-  // the pre-stage is a GitHub pre-release of the same artifact rather than a different feed.
+  // Every branch that can produce a distributable build (docs/branching-and-release.md).
+  // A non-public ref makes NB.GV append -g<sha>, which MarketplaceVersion strips anyway —
+  // but listing them keeps `nbgv get-version` honest, so the number you read before tagging
+  // is the number that ships.
   "publicReleaseRefSpec": [
     "^refs/heads/main$",
-    "^refs/heads/release/v\\d+\\.\\d+$"
+    "^refs/heads/develop$",
+    "^refs/heads/release/.*$",
+    "^refs/heads/support/v\\d+\\.\\d+$"
   ],
 
   // The extension shipped its changelog entry as 10.4.15 before versioning moved to NB.GV.

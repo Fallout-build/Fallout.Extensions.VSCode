@@ -28,7 +28,10 @@ using Fallout.Vsce;
     ConcurrencyGroup = "${{ github.workflow }}-${{ github.ref }}",
     ConcurrencyCancelInProgress = true,
     CheckoutRef = "${{ github.head_ref }}",
-    OnPullRequestBranches = [MainBranch],
+    // Every long-lived branch a PR can target (docs/branching-and-release.md): the trunk,
+    // production, and any support line. Feature branches themselves run nothing until a PR
+    // is opened — there is no value in gating work that isn't asking to land yet.
+    OnPullRequestBranches = [DevelopBranch, MainBranch, SupportBranchPattern],
     // Kept to a single pattern so build-skip.yml can express the exact inverse. Anything
     // more clever here (negations, directory carve-outs) makes the two sets drift, and a
     // gap between them means a PR blocked forever on a required check that never fires.
@@ -37,5 +40,12 @@ using Fallout.Vsce;
     PublishArtifacts = false)]
 partial class Build
 {
+    /// <summary>Integration trunk and default branch. All feature work lands here first.</summary>
+    const string DevelopBranch = "develop";
+
+    /// <summary>Production. Only release and hotfix merges land here, and each is tagged.</summary>
     const string MainBranch = "main";
+
+    /// <summary>Long-lived maintenance line for an older Fallout release line, e.g. support/v10.4.</summary>
+    const string SupportBranchPattern = "support/*";
 }
