@@ -8,3 +8,8 @@
 
 <!-- The label IS the changelog — there is no CHANGELOG.md to update. -->
 <!-- Write the PR title as the line you'd want to read in the release notes. -->
+
+<!-- Base branch: develop for normal work. main only for a release or hotfix. -->
+<!-- Merge method: SQUASH into develop, REBASE into main. -->
+<!-- docs/branching-and-release.md#merging -->
+

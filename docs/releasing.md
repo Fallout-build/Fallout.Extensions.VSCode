@@ -112,7 +112,7 @@ gh release create v10.4.30-rc.1 --target main --prerelease --generate-notes
 
 The tag must match the version `nbgv` computes for that commit — the workflow packages from the checked-out tag, not from the tag name, so a mismatch ships a `.vsix` whose version disagrees with its release.
 
-> **Merge with rebase, not squash, for `develop` → `main`.** Squashing collapses a whole release into one commit, which loses the per-change history on the production branch and makes later comparisons between the two branches useless. Merge commits are disabled repo-wide and linear history is enforced, so rebase is the only option that keeps commits intact.
+> **Merge with rebase, not squash, into `main`.** Squashing collapses a whole release into one commit, losing the per-change history on the production branch. Merge commits are disabled and linear history is enforced, so rebase is the option that keeps commits intact. Repeated rebase-merges stay clean across releases — `git rebase` drops already-applied commits by patch-id. Full reasoning and the one edge case in [branching-and-release.md](branching-and-release.md#merging).
 
 > **"Merge back to develop" is a cherry-pick or a second PR here**, not a literal merge. GitFlow assumes merge commits; this repo enforces linear history. The effect is the same — the fix must reach `develop`, or it ships to users and then disappears on the next release — but the mechanism is a PR carrying the same changes.
 
