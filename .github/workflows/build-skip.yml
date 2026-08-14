@@ -13,10 +13,11 @@
 # success under the same `ubuntu-latest` context — satisfying the rule without paying
 # for a real build.
 #
-# Two things must stay aligned with build.yml, which is generated from
+# Three things must stay aligned with build.yml, which is generated from
 # build/Build.CI.GitHubActions.cs:
 #   - the job name (`ubuntu-latest`), because that IS the status-check context;
-#   - the path set, as the exact complement of that file's OnPullRequestExcludePaths.
+#   - the path set, as the exact complement of that file's OnPullRequestExcludePaths;
+#   - the branch list, as the same set of long-lived branches a PR can target.
 # A PR touching both a .md and a source file runs both workflows; both report the same
 # context and both pass, which is fine.
 
@@ -25,7 +26,9 @@ name: build
 on:
   pull_request:
     branches:
+      - develop
       - main
+      - 'support/*'
     paths:
       - '**/*.md'
 

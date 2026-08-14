@@ -18,7 +18,11 @@ Explore, run, and visualize your [Fallout](https://github.com/Fallout-build/Fall
 
 The extension's `major.minor` track the Fallout framework release line it targets — 10.4.x builds against Fallout 10.4 — while the patch moves independently. A mismatch between the extension and the framework your workspace builds with surfaces as a non-blocking warning.
 
-Versions are computed by [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) from `version.json`, the same as the framework itself; the build fails if the declared line drifts from the Fallout version it actually references. Release candidates are published as GitHub pre-releases only — see [RELEASING.md](RELEASING.md).
+Versions are computed by [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) from `version.json`, the same as the framework itself; the build fails if the declared line drifts from the Fallout version it actually references. Release candidates are published as GitHub pre-releases only.
+
+## Contributing
+
+This repository uses GitFlow: branch from `develop`, PR back into `develop`. See [docs/branching-and-release.md](docs/branching-and-release.md), [docs/ci.md](docs/ci.md) and [docs/releasing.md](docs/releasing.md).
 
 ## License
 

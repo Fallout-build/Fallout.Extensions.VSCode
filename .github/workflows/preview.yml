@@ -1,4 +1,4 @@
-# Hand-written (not auto-generated). The "preview" channel — per-commit builds of main.
+# Hand-written (not auto-generated). The "preview" channel — per-commit builds of develop.
 #
 # Counterpart to the framework repo's publish-packages-preview.yml, which pushes a
 # -preview prerelease to GitHub Packages on every commit to main. The extension can't
@@ -22,13 +22,18 @@
 # The .vsix is marked as a marketplace pre-release, so if it is ever sideloaded next to
 # a stable build VS Code shows it as pre-release rather than silently as a release.
 #
+# See docs/ci.md for how this fits with the other workflows.
+#
 # NOTE: this publishes NOTHING to any marketplace. It is the GitHub pre-stage only.
 name: preview
 
 on:
   push:
     branches:
-      - main
+      # develop is the integration trunk under GitFlow, so it is what "latest" means.
+      # main only ever receives release and hotfix merges, and those are tagged, so a
+      # preview build of main would duplicate a release build of the same commit.
+      - develop
     paths-ignore:
       - '**/*.md'
   workflow_dispatch:
@@ -108,7 +113,7 @@ jobs:
           set -euo pipefail
 
           NOTES=$(cat <<EOF
-          Rolling preview build of \`main\` — **replaced on every push**, so this release is not a
+          Rolling preview build of \`develop\` — **replaced on every push**, so this release is not a
           durable reference. For a fixed version, use a tagged release instead.
 
           | | |
