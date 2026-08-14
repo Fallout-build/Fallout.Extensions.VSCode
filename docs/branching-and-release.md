@@ -120,9 +120,31 @@ Admins are deliberately exempt (`enforce_admins: false`), which keeps an escape 
 
 ## Merging
 
-Merge commits are disabled. **Squash or rebase only**, and linear history is enforced on all protected branches.
+**Merge commits are disabled** and linear history is enforced on every protected branch. Which of the two remaining methods to use depends on the direction:
 
-One consequence specific to GitFlow: a `release/*` or `hotfix/*` branch has to merge into **two** branches. Squashing into `main` and then squashing the same work into `develop` produces two unrelated commits with the same content, which is fine here — we don't rely on `git branch --contains` for anything except [tag validation](ci.md#publishyml), which checks reachability from `main` and `support/*` only.
+| Merging | Method | Why |
+|---|---|---|
+| `feature/*` → `develop` | **Squash** | Working branches accumulate WIP. One commit per landed change keeps the trunk readable. |
+| `develop` → `main` | **Rebase** | Squashing would collapse an entire release into a single commit on the production branch, losing the per-change history. |
+| `release/*` → `main` | **Rebase** | Same, and the individual stabilisation commits are what you cherry-pick back to `develop`. |
+| `hotfix/*` → `main` | **Rebase** | Same — you need a real commit to port back. |
+| anything → `develop` (port-back) | **Squash** | It's a working branch like any other. |
+
+GitHub can't enforce a method per branch, so this is discipline rather than configuration. Both methods stay enabled because both are correct somewhere.
+
+### Why rebase across two long-lived branches is safe here
+
+Rebase-merge rewrites commits, so `main` never becomes an ancestor of `develop` — and once a hotfix has landed on `main` and been ported back, the merge base falls behind both. The obvious worry is that the *next* release would try to replay commits already present on `main`.
+
+It doesn't. `git rebase` detects already-applied commits by patch-id and drops them, so a second release replays only the genuinely new work. Verified rather than assumed: after a release, a hotfix on `main`, and a cherry-pick back to `develop`, a rebase of `develop` onto `main` listed three candidate commits and replayed exactly one.
+
+The edge case to know: if a port-back was **conflict-resolved differently** from the original, its patch no longer matches and rebase will try to apply it again. That surfaces as a conflict at release time — visible and fixable, not silent.
+
+### The double merge-back
+
+A `release/*` or `hotfix/*` branch has to reach **two** branches. Because merge commits are disabled, the second one is a cherry-pick or a fresh PR rather than a literal merge — see [releasing.md](releasing.md#hotfix). The effect is what matters: a fix that never reaches `develop` ships once and then disappears on the next release.
+
+We don't rely on `git branch --contains` anywhere except [tag validation](ci.md#publishyml), which checks reachability from `main` and `support/*` only — so the SHA divergence between the two branches costs us nothing.
 
 ## See also
 
