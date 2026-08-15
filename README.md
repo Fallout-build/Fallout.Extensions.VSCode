@@ -22,7 +22,7 @@ Versions are computed by [Nerdbank.GitVersioning](https://github.com/dotnet/Nerd
 
 ## Contributing
 
-This repository uses GitFlow: branch from `develop`, PR back into `develop`. See [docs/branching-and-release.md](docs/branching-and-release.md), [docs/ci.md](docs/ci.md) and [docs/releasing.md](docs/releasing.md).
+This repository uses GitFlow: branch from `develop`, PR back into `develop`. Press <kbd>F5</kbd> to run the extension from source — see [docs/developing.md](docs/developing.md), plus [docs/branching-and-release.md](docs/branching-and-release.md), [docs/ci.md](docs/ci.md) and [docs/releasing.md](docs/releasing.md).
 
 ## License
 

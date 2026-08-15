@@ -100,6 +100,8 @@ dotnet fallout --plan             # what would run, without running it
 dotnet fallout VerifyVsixCredentials   # proves marketplace tokens, publishes nothing
 ```
 
+To run the extension itself rather than the build, see [developing.md](developing.md).
+
 ## Gotchas
 
 - **`PublicRelease: true`** is set on any job that checks out a tag. A detached HEAD matches none of `version.json`'s branch refspecs, so without it Nerdbank.GitVersioning appends a git-height suffix and the marketplace version stops being a clean triple.
