@@ -141,7 +141,7 @@ export function activate(context: vscode.ExtensionContext): void {
     watcher.onDidDelete(() => provider.refresh());
 
     context.subscriptions.push(
-        vscode.window.registerTreeDataProvider('falloutTargets', provider),
+        vscode.window.registerTreeDataProvider('fallout.build', provider),
         watcher,
         vscode.commands.registerCommand('fallout.refreshTargets', refreshAll),
         vscode.commands.registerCommand('fallout.runTarget', (item?: TargetItem) => {
