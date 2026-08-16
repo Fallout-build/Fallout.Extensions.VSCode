@@ -1,0 +1,39 @@
+{
+    // F5 opens a second VS Code window (the Extension Development Host) with this
+    // extension loaded from source. See docs/developing.md.
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Extension",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}",
+                // Open this repo as the test workspace: it builds with Fallout, so it
+                // already has a .fallout/temp/build-graph.json and the views populate
+                // immediately. Point this elsewhere to test against another build.
+                "${workspaceFolder}"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ],
+            "preLaunchTask": "npm: compile"
+        },
+        {
+            // Same, with every other extension disabled. Use when something looks off
+            // and you need to rule out interference from your own installed extensions.
+            "name": "Run Extension (clean profile)",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}",
+                "--disable-extensions",
+                "${workspaceFolder}"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ],
+            "preLaunchTask": "npm: compile"
+        }
+    ]
+}
