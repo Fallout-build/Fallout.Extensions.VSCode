@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: 🔒 Security vulnerability
+    url: https://github.com/Fallout-build/.github/blob/main/SECURITY.md
+    about: Don't file these as issues. Report privately via this repo's Security tab.
   - name: 🧩 Fallout framework issues
     url: https://github.com/Fallout-build/Fallout/issues
     about: Build engine, targets, or how build-graph.json is produced — that's the framework, not this extension.

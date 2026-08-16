@@ -1,6 +1,6 @@
 # Contribution Guidelines
 
-Contributions are welcome. As a community, we want to help each other, provide constructive feedback, and make a better product. The [Fallout code of conduct](https://github.com/Fallout-build/Fallout/blob/main/CODE_OF_CONDUCT.md) applies here too.
+Contributions are welcome. As a community, we want to help each other, provide constructive feedback, and make a better product. The [Fallout code of conduct](https://github.com/Fallout-build/.github/blob/main/CODE_OF_CONDUCT.md) applies here too — it's inherited org-wide, along with the [security policy](https://github.com/Fallout-build/.github/blob/main/SECURITY.md) and [support guide](https://github.com/Fallout-build/.github/blob/main/SUPPORT.md).
 
 > **About this repo.** This is the VS Code extension for [Fallout](https://github.com/Fallout-build/Fallout), not the framework itself. It reads a `build-graph.json` the Fallout build emits, and it ships to the VS Marketplace and Open VSX. Framework changes belong in [Fallout-build/Fallout](https://github.com/Fallout-build/Fallout).
 
