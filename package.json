@@ -33,6 +33,7 @@
         "onView:fallout.build",
         "onView:fallout.buildExplorer",
         "onView:fallout.deployment",
+        "onView:fallout.runConfig",
         "workspaceContains:**/.fallout/temp/build-graph.json",
         "workspaceContains:**/.nuke/temp/build-graph.json"
     ],
@@ -57,6 +58,13 @@
                 {
                     "id": "fallout.deployment",
                     "name": "Deployment",
+                    "icon": "media/fallout.svg",
+                    "contextualTitle": "Fallout"
+                },
+                {
+                    "id": "fallout.runConfig",
+                    "name": "Run Configuration",
+                    "type": "webview",
                     "icon": "media/fallout.svg",
                     "contextualTitle": "Fallout"
                 }
