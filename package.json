@@ -32,6 +32,7 @@
     "activationEvents": [
         "onView:fallout.build",
         "onView:fallout.buildExplorer",
+        "onView:fallout.deployment",
         "workspaceContains:**/.fallout/temp/build-graph.json",
         "workspaceContains:**/.nuke/temp/build-graph.json"
     ],
@@ -50,6 +51,12 @@
                 {
                     "id": "fallout.build",
                     "name": "Build",
+                    "icon": "media/fallout.svg",
+                    "contextualTitle": "Fallout"
+                },
+                {
+                    "id": "fallout.deployment",
+                    "name": "Deployment",
                     "icon": "media/fallout.svg",
                     "contextualTitle": "Fallout"
                 }
@@ -72,6 +79,10 @@
             {
                 "view": "fallout.buildExplorer",
                 "contents": "No Fallout build graph found in this workspace.\nRun the build once to generate `build-graph.json`, then refresh.\n[Plan build (dry run)](command:fallout.planTarget)"
+            },
+            {
+                "view": "fallout.deployment",
+                "contents": "No deployment graph yet.\nThe continuous-delivery model (channels → environments → targets) is emitted by a later Fallout build (ADR-0009). This view lights up once the framework writes a `deployment-graph.json`."
             }
         ],
         "commands": [
@@ -115,7 +126,7 @@
                 },
                 {
                     "command": "fallout.refreshTargets",
-                    "when": "view == fallout.build || view == fallout.buildExplorer",
+                    "when": "view == fallout.build || view == fallout.buildExplorer || view == fallout.deployment",
                     "group": "navigation@2"
                 }
             ],
