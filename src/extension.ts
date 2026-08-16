@@ -121,9 +121,16 @@ class DeploymentProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
     }
 }
 
-function runInTerminal(root: string, args: string): void {
-    const existing = vscode.window.terminals.find(t => t.name === 'Fallout');
-    const terminal = existing ?? vscode.window.createTerminal({ name: 'Fallout', cwd: root });
+function runInTerminal(root: string, args: string, env?: Record<string, string>): void {
+    const hasEnv = env !== undefined && Object.keys(env).length > 0;
+    let terminal = vscode.window.terminals.find(t => t.name === 'Fallout');
+    if (hasEnv) {
+        // Terminal env is fixed at creation; recreate so the current secrets apply.
+        terminal?.dispose();
+        terminal = vscode.window.createTerminal({ name: 'Fallout', cwd: root, env });
+    } else {
+        terminal ??= vscode.window.createTerminal({ name: 'Fallout', cwd: root });
+    }
     terminal.show();
     terminal.sendText(process.platform === 'win32' ? `./build.ps1 ${args}` : `./build.sh ${args}`);
 }
@@ -133,11 +140,27 @@ export function activate(context: vscode.ExtensionContext): void {
     const provider = new FalloutTargetsProvider(extensionVersion);
     const runConfig = new RunConfigStore(context);
 
-    const runTarget = (name: string) => {
-        const root = provider.source?.root;
-        if (root) {
-            runInTerminal(root, name);
-        }
+    const workspaceRoot = () => provider.source?.root ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+
+    // Silent run (▶): apply saved parameters as args and secrets as env.
+    const runTarget = async (name: string): Promise<void> => {
+        const root = workspaceRoot();
+        if (!root) { return; }
+        const args = [name, runConfig.buildArgs()].filter(Boolean).join(' ');
+        runInTerminal(root, args, await runConfig.buildEnv());
+    };
+
+    // Prompt run: prefill with target + saved args, let the user tweak before running.
+    const runTargetWithParameters = async (name: string): Promise<void> => {
+        const root = workspaceRoot();
+        if (!root) { return; }
+        const edited = await vscode.window.showInputBox({
+            title: `Run ${name}`,
+            prompt: 'Arguments passed to the Fallout build (secrets are still applied as environment variables)',
+            value: [name, runConfig.buildArgs()].filter(Boolean).join(' '),
+        });
+        if (edited === undefined) { return; } // cancelled
+        runInTerminal(root, edited, await runConfig.buildEnv());
     };
 
     const refreshAll = () => {
@@ -168,7 +191,12 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('fallout.refreshTargets', refreshAll),
         vscode.commands.registerCommand('fallout.runTarget', (item?: TargetItem) => {
             if (item?.target) {
-                runTarget(item.target.name);
+                void runTarget(item.target.name);
+            }
+        }),
+        vscode.commands.registerCommand('fallout.runTargetWithParameters', (item?: TargetItem) => {
+            if (item?.target) {
+                void runTargetWithParameters(item.target.name);
             }
         }),
         vscode.commands.registerCommand('fallout.goToTarget', (item?: TargetItem) => {
@@ -186,13 +214,13 @@ export function activate(context: vscode.ExtensionContext): void {
                 provider.source ??= source;
                 const graph = loadGraph(source);
                 checkCompatibility(graph, extensionVersion);
-                GraphPanel.createOrShow(context.extensionUri, graph, runTarget);
+                GraphPanel.createOrShow(context.extensionUri, graph, name => void runTarget(name));
             } catch (e) {
                 void vscode.window.showWarningMessage(`Fallout: could not parse ${source.file}: ${e}`);
             }
         }),
         vscode.commands.registerCommand('fallout.planTarget', () => {
-            const root = provider.source?.root ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+            const root = workspaceRoot();
             if (root) {
                 runInTerminal(root, '--plan');
             }
