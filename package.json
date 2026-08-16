@@ -31,6 +31,7 @@
     "main": "./out/extension.js",
     "activationEvents": [
         "onView:fallout.build",
+        "onView:fallout.buildExplorer",
         "workspaceContains:**/.fallout/temp/build-graph.json",
         "workspaceContains:**/.nuke/temp/build-graph.json"
     ],
@@ -52,11 +53,24 @@
                     "icon": "media/fallout.svg",
                     "contextualTitle": "Fallout"
                 }
+            ],
+            "explorer": [
+                {
+                    "id": "fallout.buildExplorer",
+                    "name": "Fallout Build",
+                    "icon": "media/fallout.svg",
+                    "contextualTitle": "Fallout",
+                    "visibility": "collapsed"
+                }
             ]
         },
         "viewsWelcome": [
             {
                 "view": "fallout.build",
+                "contents": "No Fallout build graph found in this workspace.\nRun the build once to generate `build-graph.json`, then refresh.\n[Plan build (dry run)](command:fallout.planTarget)"
+            },
+            {
+                "view": "fallout.buildExplorer",
                 "contents": "No Fallout build graph found in this workspace.\nRun the build once to generate `build-graph.json`, then refresh.\n[Plan build (dry run)](command:fallout.planTarget)"
             }
         ],
@@ -96,24 +110,24 @@
             "view/title": [
                 {
                     "command": "fallout.showGraph",
-                    "when": "view == fallout.build",
+                    "when": "view == fallout.build || view == fallout.buildExplorer",
                     "group": "navigation@1"
                 },
                 {
                     "command": "fallout.refreshTargets",
-                    "when": "view == fallout.build",
+                    "when": "view == fallout.build || view == fallout.buildExplorer",
                     "group": "navigation@2"
                 }
             ],
             "view/item/context": [
                 {
                     "command": "fallout.runTarget",
-                    "when": "view == fallout.build && viewItem == falloutTarget",
+                    "when": "(view == fallout.build || view == fallout.buildExplorer) && viewItem == falloutTarget",
                     "group": "inline@1"
                 },
                 {
                     "command": "fallout.goToTarget",
-                    "when": "view == fallout.build && viewItem == falloutTarget",
+                    "when": "(view == fallout.build || view == fallout.buildExplorer) && viewItem == falloutTarget",
                     "group": "inline@2"
                 }
             ],

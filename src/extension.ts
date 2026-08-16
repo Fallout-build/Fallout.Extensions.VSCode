@@ -141,7 +141,10 @@ export function activate(context: vscode.ExtensionContext): void {
     watcher.onDidDelete(() => provider.refresh());
 
     context.subscriptions.push(
+        // Same provider instance backs both the Fallout-container Build view and the
+        // mirrored Explorer dock — one graph, two homes; refresh() updates both.
         vscode.window.registerTreeDataProvider('fallout.build', provider),
+        vscode.window.registerTreeDataProvider('fallout.buildExplorer', provider),
         watcher,
         vscode.commands.registerCommand('fallout.refreshTargets', refreshAll),
         vscode.commands.registerCommand('fallout.runTarget', (item?: TargetItem) => {
