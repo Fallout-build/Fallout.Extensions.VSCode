@@ -24,6 +24,8 @@ Versions are computed by [Nerdbank.GitVersioning](https://github.com/dotnet/Nerd
 
 This repository uses GitFlow: branch from `develop`, PR back into `develop`. See [docs/branching-and-release.md](docs/branching-and-release.md), [docs/ci.md](docs/ci.md) and [docs/releasing.md](docs/releasing.md).
 
+[AGENTS.md](AGENTS.md) is the canonical brief on how this repo is built and released — conventions, the generated-CI rule, the versioning contract. It serves human contributors and AI tools alike; GitHub Copilot reads it natively and `CLAUDE.md` points to it.
+
 ## License
 
 [MIT](LICENSE)

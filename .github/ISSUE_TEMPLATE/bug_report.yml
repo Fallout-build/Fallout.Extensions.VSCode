@@ -1,0 +1,111 @@
+name: 🐞 Bug Report
+description: "Report something that doesn't look alright."
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        _Hi there :wave: and thanks for taking the time to report a bug!_
+
+        _Before you continue, please check the [contribution guidelines](https://github.com/Fallout-build/Fallout.Extensions.VSCode/blob/develop/CONTRIBUTING.md)._
+
+  - type: markdown
+    attributes:
+      value: |
+        **Empty Targets view?** Check two things first — they account for most reports:
+        1. Your workspace builds with **Fallout 10.4.0 or later**. Earlier versions emit no build graph at all.
+        2. `.fallout/temp/build-graph.json` exists. Run `./build.ps1 --plan` once to generate it.
+
+  - type: input
+    id: usage-information
+    attributes:
+      label: Usage Information
+      description: Extension version / Fallout version / VS Code version / Operating System
+      placeholder: 10.4.30 / Fallout 10.4.0 / VS Code 1.96.2 / macOS 15.2
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Please share a clear and concise description of the problem.
+      placeholder: Description
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Reproduction Steps
+      description: |
+        Minimal steps to reproduce. Include logs and exceptions as text rather than screenshots — except for genuinely visual problems (graph layout, tree icons, theme contrast), where a screenshot is the clearest evidence.
+      placeholder: Minimal Reproduction
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      placeholder: Expected Behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: If applicable, include error messages or stack traces.
+      placeholder: Actual Behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: build-graph
+    attributes:
+      label: Build graph
+      description: |
+        For anything about which targets appear, how they relate, or how the graph renders: paste the relevant slice of `.fallout/temp/build-graph.json`. Trim it to the targets involved — the whole file is rarely needed.
+      render: json
+    validations:
+      required: false
+
+  - type: textarea
+    id: extension-log
+    attributes:
+      label: Extension log
+      description: |
+        Optional. **Output** panel → select **Fallout** or **Log (Extension Host)** from the dropdown. Errors thrown during activation land there.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: regression
+    attributes:
+      label: Regression?
+      description: |
+        Did this work in a previous version of the extension? If you can try an earlier one, that helps narrow it down. If you don't know, that's OK.
+      placeholder: Regression?
+    validations:
+      required: false
+
+  - type: textarea
+    id: known-workarounds
+    attributes:
+      label: Known Workarounds
+      placeholder: Known Workarounds
+    validations:
+      required: false
+
+  - type: dropdown
+    id: pull-request
+    attributes:
+      label: Could you help with a pull-request?
+      description: See the [contribution guidelines](https://github.com/Fallout-build/Fallout.Extensions.VSCode/blob/develop/CONTRIBUTING.md).
+      options:
+        - "No"
+        - "Yes"
+    validations:
+      required: true

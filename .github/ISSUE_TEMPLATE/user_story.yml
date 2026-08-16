@@ -1,0 +1,61 @@
+name: 📝 User Story
+description: "Describe a desired capability as a small, outcome-focused story."
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        _Keep it terse and scannable — Problem, Outcome, and how we'll know it's done. See [issue & PR style](https://github.com/Fallout-build/Fallout.Extensions.VSCode/blob/develop/docs/issue-and-pr-style.md)._
+
+        _Before you continue, please check the [contribution guidelines](https://github.com/Fallout-build/Fallout.Extensions.VSCode/blob/develop/CONTRIBUTING.md)._
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What's wrong or missing, and for whom? 1–2 sentences.
+      placeholder: Finding which target a failing build actually ran means reading the terminal scrollback — the Targets view doesn't show run state.
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome
+      description: What does "done" look like? Describe observable behaviour, not the implementation.
+      placeholder: A target that has run shows its last result in the tree, and clicking it reveals that run's output.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: Testable checkboxes. Drop this section if the Outcome is self-evident.
+      placeholder: |
+        - [ ] A succeeded target is visually distinct from one that has never run
+        - [ ] State clears when the graph is regenerated
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Optional. Links, constraints, related issues (≤3 lines). Leave blank if none.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: pull-request
+    attributes:
+      label: Could you help with a pull-request?
+      description: See the [contribution guidelines](https://github.com/Fallout-build/Fallout.Extensions.VSCode/blob/develop/CONTRIBUTING.md).
+      options:
+        - "No"
+        - "Yes"
+    validations:
+      required: true
