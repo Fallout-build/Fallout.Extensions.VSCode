@@ -107,6 +107,12 @@
                 "icon": "$(play)"
             },
             {
+                "command": "fallout.runTargetWithParameters",
+                "title": "Run Target with Parameters…",
+                "category": "Fallout",
+                "icon": "$(run-all)"
+            },
+            {
                 "command": "fallout.goToTarget",
                 "title": "Go to Definition",
                 "category": "Fallout",
@@ -145,14 +151,23 @@
                     "group": "inline@1"
                 },
                 {
-                    "command": "fallout.goToTarget",
+                    "command": "fallout.runTargetWithParameters",
                     "when": "(view == fallout.build || view == fallout.buildExplorer) && viewItem == falloutTarget",
                     "group": "inline@2"
+                },
+                {
+                    "command": "fallout.goToTarget",
+                    "when": "(view == fallout.build || view == fallout.buildExplorer) && viewItem == falloutTarget",
+                    "group": "inline@3"
                 }
             ],
             "commandPalette": [
                 {
                     "command": "fallout.runTarget",
+                    "when": "false"
+                },
+                {
+                    "command": "fallout.runTargetWithParameters",
                     "when": "false"
                 },
                 {
