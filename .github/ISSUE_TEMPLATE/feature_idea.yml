@@ -1,0 +1,53 @@
+name: 💡 Feature Idea
+description: "Suggest new features for the extension."
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        _Hi there :wave: and thanks for taking the time to send a feature idea!_
+
+        _Before you continue, please check the [contribution guidelines](https://github.com/Fallout-build/Fallout.Extensions.VSCode/blob/develop/CONTRIBUTING.md)._
+
+        _This repo is the **VS Code extension**. Ideas about targets, the build engine, or how the build graph is produced belong in the [framework repo](https://github.com/Fallout-build/Fallout/issues)._
+
+  - type: textarea
+    attributes:
+      label: Description
+      description: What should the new feature do?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Usage Example
+      description: How would you use it — which view, command, or gesture?
+
+  - type: textarea
+    attributes:
+      label: Alternative
+      description: What do you do today instead?
+
+  - type: dropdown
+    id: needs-framework-change
+    attributes:
+      label: Does this need new data in build-graph.json?
+      description: |
+        If the extension would need information Fallout doesn't currently emit, this needs a framework change first and will be routed there. Pick "Not sure" if you don't know — that's fine.
+      options:
+        - "Not sure"
+        - "No — it works with what's already in the graph"
+        - "Yes — Fallout would need to emit something new"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: pull-request
+    attributes:
+      label: Could you help with a pull-request?
+      description: See the [contribution guidelines](https://github.com/Fallout-build/Fallout.Extensions.VSCode/blob/develop/CONTRIBUTING.md).
+      options:
+        - "No"
+        - "Yes"
+    validations:
+      required: true

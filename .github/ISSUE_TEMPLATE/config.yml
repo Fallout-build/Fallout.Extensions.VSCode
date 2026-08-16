@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🧩 Fallout framework issues
+    url: https://github.com/Fallout-build/Fallout/issues
+    about: Build engine, targets, or how build-graph.json is produced — that's the framework, not this extension.
+  - name: 📚 Contributing & release docs
+    url: https://github.com/Fallout-build/Fallout.Extensions.VSCode/blob/develop/CONTRIBUTING.md
+    about: Branching, PR labels, and how this extension is built and released.
+  - name: 🧪 Preview build
+    url: https://github.com/Fallout-build/Fallout.Extensions.VSCode/releases/tag/preview
+    about: Every push to develop publishes a rolling pre-release .vsix. Worth checking your issue isn't already fixed there.

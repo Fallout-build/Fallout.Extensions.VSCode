@@ -1,6 +1,7 @@
 .vscode/**
 .vscode-test/**
 .github/**
+.claude/**
 src/**
 out/**/*.map
 **/*.ts
@@ -20,6 +21,9 @@ build.ps1
 build.sh
 # Maintainer-facing; the marketplace page renders README.md only.
 docs/**
+AGENTS.md
+CLAUDE.md
+CONTRIBUTING.md
 
 # Ship only Mermaid's self-contained UMD bundle (loaded by the graph webview via a
 # classic <script> tag), not its entire dependency tree or the code-split ESM build.
