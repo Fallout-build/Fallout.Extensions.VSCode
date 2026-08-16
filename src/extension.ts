@@ -105,6 +105,21 @@ class FalloutTargetsProvider implements vscode.TreeDataProvider<TargetItem> {
     }
 }
 
+/**
+ * Placeholder for the Deployment view. The continuous-delivery graph (channels →
+ * environments → targets, ADR-0009) is not emitted by the framework yet, so this
+ * returns nothing and the view shows its welcome content. It becomes real once the
+ * build writes a deployment-graph.json.
+ */
+class DeploymentProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
+    getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
+        return element;
+    }
+    getChildren(): vscode.ProviderResult<vscode.TreeItem[]> {
+        return [];
+    }
+}
+
 function runInTerminal(root: string, args: string): void {
     const existing = vscode.window.terminals.find(t => t.name === 'Fallout');
     const terminal = existing ?? vscode.window.createTerminal({ name: 'Fallout', cwd: root });
@@ -145,6 +160,7 @@ export function activate(context: vscode.ExtensionContext): void {
         // mirrored Explorer dock — one graph, two homes; refresh() updates both.
         vscode.window.registerTreeDataProvider('fallout.build', provider),
         vscode.window.registerTreeDataProvider('fallout.buildExplorer', provider),
+        vscode.window.registerTreeDataProvider('fallout.deployment', new DeploymentProvider()),
         watcher,
         vscode.commands.registerCommand('fallout.refreshTargets', refreshAll),
         vscode.commands.registerCommand('fallout.runTarget', (item?: TargetItem) => {
