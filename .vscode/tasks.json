@@ -1,0 +1,24 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            // preLaunchTask for both launch configurations — F5 compiles before it launches,
+            // so the Extension Development Host never runs stale out/*.js.
+            "type": "npm",
+            "script": "compile",
+            "group": "build",
+            "problemMatcher": "$tsc",
+            "label": "npm: compile"
+        },
+        {
+            // Long-running alternative: leave this going and use "Reload Window" in the
+            // Extension Development Host instead of restarting the debug session.
+            "type": "npm",
+            "script": "watch",
+            "group": "build",
+            "isBackground": true,
+            "problemMatcher": "$tsc-watch",
+            "label": "npm: watch"
+        }
+    ]
+}
