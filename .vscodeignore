@@ -24,6 +24,8 @@ docs/**
 AGENTS.md
 CLAUDE.md
 CONTRIBUTING.md
+# Repo branding (GitHub social preview), not extension assets — media/ holds those.
+.assets/**
 
 # Ship only Mermaid's self-contained UMD bundle (loaded by the graph webview via a
 # classic <script> tag), not its entire dependency tree or the code-split ESM build.
