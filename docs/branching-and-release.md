@@ -8,7 +8,7 @@ How this repository branches, ships, and maintains older lines. The model is **G
 
 | Branch | Purpose | Lifetime | Tagged? |
 |---|---|---|---|
-| `develop` | **Integration trunk. Default branch.** All finished work lands here first. Every push builds the [preview channel](releasing.md#the-preview-channel). | Permanent | No |
+| `develop` | **Integration trunk. Default branch.** All finished work lands here first. Every push builds the [nightly channel](releasing.md#the-nightly-channel). | Permanent | No |
 | `main` | **Production.** Only receives merges from `release/*` and `hotfix/*`, and every one of those is tagged. Never committed to directly. | Permanent | **Yes** |
 | `release/*` | **Stabilisation window** for a release being prepared. Cut from `develop`; takes only fixes and release prep. Merges to `main` *and back to* `develop`, then deleted. | Short-lived | No (the merge into `main` is) |
 | `hotfix/*` | **Urgent production fix.** Cut from `main`. Merges to `main` *and* `develop`, then deleted. | Short-lived | No (the merge into `main` is) |

@@ -24,13 +24,13 @@ So an RC is an ordinary triple carrying a pre-release bit in the VSIX manifest (
 
 **A version is pre-release or stable, never both.** Publishing `10.4.30` as a marketplace pre-release burns that number, forcing GA to `10.4.31`. Release candidates therefore stop at GitHub.
 
-That argument does *not* apply to the [preview channel](#the-preview-channel): the patch is a git height, so every build already has a unique number and stable is always a later height. Nothing gets consumed that a stable release wants.
+That argument does *not* apply to the [nightly channel](#the-nightly-channel): the patch is a git height, so every build already has a unique number and stable is always a later height. Nothing gets consumed that a stable release wants.
 
 ## Channels
 
 ```mermaid
 flowchart LR
-    DEV["develop"] -->|every push| PREV["preview<br/><i>rolling pre-release</i>"]
+    DEV["develop"] -->|every push| PREV["nightly<br/><i>rolling pre-release</i>"]
     MAIN["main / support/*"] -->|"v* tag"| GH["github-releases"]
     GH -.->|"opt-in flag<br/>+ approval"| VSM["vs-marketplace"]
     GH -.->|"opt-in flag<br/>+ approval"| OVSX["open-vsx"]
@@ -43,21 +43,23 @@ flowchart LR
 
 | Channel | Trigger | Gating |
 |---|---|---|
-| `preview` (rolling) | every push to `develop` | none |
+| `nightly` (rolling) | every push to `develop` | none |
 | `github-releases` | any `v*` tag | none |
 | `vs-marketplace` | dispatch opt-in flag | flag + approval |
 | `open-vsx` | dispatch opt-in flag | flag + approval |
 
 **A tag push never reaches a marketplace.** Promotion is deliberate: set the flag, then approve the environment — two independent layers, matching how Fallout gates nuget.org.
 
-## The preview channel
+## The nightly channel
 
-Every push to `develop` builds a `.vsix`, uploads it as a per-run workflow artifact, and replaces the asset on a rolling `preview` GitHub pre-release.
+Every push to `develop` builds a `.vsix`, uploads it as a per-run workflow artifact, and replaces the asset on a rolling `nightly` GitHub pre-release.
+
+> Named `preview` until GitHub's immutable releases were briefly enabled here. An immutable release reserves its tag **permanently** — deleting the release and the tag does not free the name — so `preview` is unusable in this repo forever. Keep immutable releases off: a rolling tag and immutability cannot coexist, and the next name would burn the same way.
 
 Both, deliberately: the release asset has a **stable URL** and is what you install from, but the next push replaces it — so the per-run artifact is the fixed record of what a given commit produced.
 
 ```bash
-gh release download preview -R Fallout-build/Fallout.Extensions.VSCode -p '*.vsix' --clobber
+gh release download nightly -R Fallout-build/Fallout.Extensions.VSCode -p '*.vsix' --clobber
 code --install-extension fallout.vsix --force
 ```
 

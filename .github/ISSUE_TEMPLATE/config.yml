@@ -9,6 +9,6 @@ contact_links:
   - name: 📚 Contributing & release docs
     url: https://github.com/Fallout-build/Fallout.Extensions.VSCode/blob/develop/CONTRIBUTING.md
     about: Branching, PR labels, and how this extension is built and released.
-  - name: 🧪 Preview build
-    url: https://github.com/Fallout-build/Fallout.Extensions.VSCode/releases/tag/preview
+  - name: 🧪 Nightly build
+    url: https://github.com/Fallout-build/Fallout.Extensions.VSCode/releases/tag/nightly
     about: Every push to develop publishes a rolling pre-release .vsix. Worth checking your issue isn't already fixed there.

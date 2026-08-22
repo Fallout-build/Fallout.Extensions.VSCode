@@ -10,7 +10,7 @@ The governing principle: **the build is defined in C#, not in YAML.** Every work
 |---|---|---|---|
 | `build.yml` | PR to `develop`, `main`, `support/*` | `PackVsix` — the required check | **Yes**, from `[GitHubActions]` |
 | `build-skip.yml` | PR touching only `**/*.md` | Nothing; reports the same check | No |
-| `preview.yml` | push to `develop` | Packs, publishes the rolling `preview` release | No |
+| `nightly.yml` | push to `develop` | Packs, publishes the rolling `nightly` release | No |
 | `publish.yml` | `v*` tag push, or dispatch | Packs, releases, optionally promotes to marketplaces | No |
 
 ```mermaid
@@ -21,8 +21,8 @@ flowchart LR
     B --> C(["ubuntu-latest ✓"])
     S --> C
 
-    D["Push to develop"] --> P["preview.yml"]
-    P --> PR2["rolling 'preview'<br/>pre-release"]
+    D["Push to develop"] --> P["nightly.yml"]
+    P --> PR2["rolling 'nightly'<br/>pre-release"]
 
     T["Tag v*"] --> V["publish.yml"]
     V --> R["GitHub release"]
@@ -52,14 +52,15 @@ This is why `OnPullRequestExcludePaths` is a single `**/*.md` pattern. An earlie
 
 A PR touching both a `.md` and a source file runs **both** workflows. Both report `ubuntu-latest`, both pass. That's fine.
 
-## preview.yml
+## nightly.yml
 
-Every push to `develop` packs a `.vsix`, uploads it as a per-run artifact, and replaces the asset on a rolling `preview` GitHub pre-release. Details and rationale in [releasing.md](releasing.md#the-preview-channel).
+Every push to `develop` packs a `.vsix`, uploads it as a per-run artifact, and replaces the asset on a rolling `nightly` GitHub pre-release. Details and rationale in [releasing.md](releasing.md#the-nightly-channel).
 
 Two deliberate choices worth knowing when reading it:
 
 - **Concurrency queues, never cancels.** A cancelled run could leave the release holding a half-uploaded asset.
-- **The tag is `preview`, which does not match `v*`.** So it neither triggers `publish.yml` nor falls under the `v*` tag-protection ruleset — necessary, because the workflow force-moves that tag on every push.
+- **The tag is `nightly`, which does not match `v*`.** So it neither triggers `publish.yml` nor falls under the `v*` tag-protection ruleset — necessary, because the workflow force-moves that tag on every push.
+- **Never enable immutable releases on this repo.** An immutable release reserves its tag permanently, which a force-moved tag cannot survive; it burned the original `preview` name for good. If immutability is ever required, this channel has to move to per-commit tags.
 
 ## publish.yml
 
@@ -84,7 +85,7 @@ flowchart TD
     style OV fill:#7f4f24,color:#fff
 ```
 
-**`validate-ref`** confirms the tag is reachable from `main` or a `support/vX.Y` branch. Tags on `develop` are rejected: under GitFlow the trunk is never tagged for release — it ships through the preview channel instead.
+**`validate-ref`** confirms the tag is reachable from `main` or a `support/vX.Y` branch. Tags on `develop` are rejected: under GitFlow the trunk is never tagged for release — it ships through the nightly channel instead.
 
 It runs only on tag pushes. On `workflow_dispatch` it's skipped by design, which is why every downstream job is guarded with `always() && needs.<job>.result == 'success'` rather than a bare dependency — a skipped job otherwise propagates through the graph and silently skips everything after it *while the run still reports success*.
 
