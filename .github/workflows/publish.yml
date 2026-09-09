@@ -212,6 +212,12 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: fallout-vsix
+      # The publish CLIs are dev dependencies, and IHasVsix.ResolveNodeTool looks for
+      # them in node_modules/.bin before PATH. --skip PackVsix below prunes the whole
+      # upstream chain — RestoreVsix ("npm ci") included, since nothing else needs it —
+      # so without this the tools are simply absent and PublishVsix dies resolving them.
+      - name: 'Install the Node toolchain'
+        run: npm ci
       # --skip PackVsix publishes the exact artifact that was packed and validated,
       # rather than rebuilding it here and publishing bits nothing has seen.
       - name: 'Fallout build (PublishVsix → vs-marketplace)'
@@ -247,6 +253,12 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: fallout-vsix
+      # The publish CLIs are dev dependencies, and IHasVsix.ResolveNodeTool looks for
+      # them in node_modules/.bin before PATH. --skip PackVsix below prunes the whole
+      # upstream chain — RestoreVsix ("npm ci") included, since nothing else needs it —
+      # so without this the tools are simply absent and PublishVsix dies resolving them.
+      - name: 'Install the Node toolchain'
+        run: npm ci
       - name: 'Fallout build (PublishVsix → open-vsx)'
         run: ./build.sh PublishVsix --publish-vsix-to open-vsx --skip PackVsix
         env:
