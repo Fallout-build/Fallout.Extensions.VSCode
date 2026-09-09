@@ -6,6 +6,10 @@
     "publisher": "fallout",
     "license": "MIT",
     "icon": "media/icon.png",
+    "galleryBanner": {
+        "color": "#0d0d0f",
+        "theme": "dark"
+    },
     "engines": {
         "vscode": "^1.85.0"
     },
@@ -59,7 +63,8 @@
                     "id": "fallout.deployment",
                     "name": "Deployment",
                     "icon": "media/fallout.svg",
-                    "contextualTitle": "Fallout"
+                    "contextualTitle": "Fallout",
+                    "when": "config.fallout.deployment.enabled"
                 },
                 {
                     "id": "fallout.runConfig",
@@ -79,6 +84,16 @@
                 }
             ]
         },
+        "configuration": {
+            "title": "Fallout",
+            "properties": {
+                "fallout.deployment.enabled": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "Show the **Deployment** view. Off by default: the continuous-delivery graph (channels \u2192 environments \u2192 targets) is not emitted by any released Fallout version yet, so the view can only show its placeholder. Turn it on to follow the work."
+                }
+            }
+        },
         "viewsWelcome": [
             {
                 "view": "fallout.build",
@@ -90,7 +105,7 @@
             },
             {
                 "view": "fallout.deployment",
-                "contents": "No deployment graph yet.\nThe continuous-delivery model (channels → environments → targets) is emitted by a later Fallout build (ADR-0009). This view lights up once the framework writes a `deployment-graph.json`."
+                "contents": "No deployment graph yet.\nThe continuous-delivery model (channels \u2192 environments \u2192 targets) is emitted by a later Fallout build (ADR-0009). This view lights up once the framework writes a `deployment-graph.json`."
             }
         ],
         "commands": [
@@ -108,7 +123,7 @@
             },
             {
                 "command": "fallout.runTargetWithParameters",
-                "title": "Run Target with Parameters…",
+                "title": "Run Target with Parameters\u2026",
                 "category": "Fallout",
                 "icon": "$(run-all)"
             },
