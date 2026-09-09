@@ -4,6 +4,8 @@ Explore, run, and visualize your [Fallout](https://github.com/Fallout-build/Fall
 
 Your build is a C# console app. This makes it feel like part of the IDE: every target listed, one click to run, go-to-definition onto the `Target X => …` declaration, and the whole dependency graph as a diagram.
 
+![The Fallout Build view docked in the Explorer, beside the build graph](https://raw.githubusercontent.com/Fallout-build/Fallout.Extensions.VSCode/develop/.assets/screenshots/overview.png)
+
 ## Features
 
 ### Build view
@@ -11,6 +13,10 @@ Your build is a C# console app. This makes it feel like part of the IDE: every t
 A dedicated Fallout container in the activity bar lists every target in the build. The default target is marked, unlisted targets are dimmed, and each target's relations — `depends on`, `runs after`, `triggered by`, `triggers` — expand as children, recursively, so you can walk the graph in either direction.
 
 The same tree is also docked in the **Explorer**, collapsed by default, for when you don't want to leave the file tree.
+
+![Targets expanded to show their dependencies, beside the C# that declares them](https://raw.githubusercontent.com/Fallout-build/Fallout.Extensions.VSCode/develop/.assets/screenshots/targets-and-source.png)
+
+The tree is a view of your C#: expanding `PackVsix` shows the `DependsOn` chain exactly as the build declares it.
 
 ### Run a target
 
@@ -22,6 +28,8 @@ A form for the parameters and secrets your build takes:
 
 - **Parameters** are passed as `--name value` arguments and stored per workspace.
 - **Secrets** are stored in VS Code's [SecretStorage](https://code.visualstudio.com/api/references/vscode-api#SecretStorage) — OS keychain-backed — and passed as **environment variables**, so they never reach your shell history, the process list, or a log. Values are never rendered back into the view; only names are.
+
+![The Run Configuration view with a parameter and a secret](https://raw.githubusercontent.com/Fallout-build/Fallout.Extensions.VSCode/develop/.assets/screenshots/run-configuration.png)
 
 ### Go to definition
 

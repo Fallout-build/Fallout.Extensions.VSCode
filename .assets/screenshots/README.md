@@ -1,25 +1,31 @@
 # Screenshots
 
-Marketplace and README imagery. Kept here rather than in `media/` because `media/`
+README and marketplace imagery. Kept here rather than in `media/` because `media/`
 ships inside the `.vsix` (the extension icon lives there) and these do not —
 `.assets/**` is `.vscodeignore`d.
 
-README image links must be **absolute** `raw.githubusercontent.com` URLs pinned to
-`develop`. `vsce` rewrites relative links when it packages, and the rewritten base
-is not guaranteed to match this repo's default branch.
+README links these with **absolute** `raw.githubusercontent.com` URLs pinned to
+`develop`. Verified: `vsce` passes absolute URLs through unchanged, while it
+rewrites relative ones to a base that is not guaranteed to match this repo's
+default branch.
 
-## Shot list
-
-Capture in an Extension Development Host (<kbd>F5</kbd>) with this repository open as
-the workspace — it builds with Fallout, so the graph is already populated. Use the
-**dark** theme to match the banner, and hide any personal paths.
-
-| File | What to show |
+| File | Used for |
 |---|---|
-| `build-view.png` | Fallout container, Build view, one target expanded to show `depends on` / `triggers` children. The default target's rocket icon visible. |
-| `run-config.png` | Run Configuration view with two or three parameters filled and one secret listed as *not set*. |
-| `build-graph.png` | The Mermaid graph panel, whole graph visible, showing solid / dashed / thick edges. |
-| `explorer-dock.png` | The Explorer with the **Fallout Build** section expanded, alongside the file tree. |
+| `overview.png` | Hero. Explorer file tree, the Fallout Build dock, and the graph in one frame. |
+| `targets-and-source.png` | Build view — the `DependsOn` chain in the tree beside the C# that declares it. |
+| `run-configuration.png` | Run Configuration — a parameter and a secret, with the keychain note visible. |
 
-Crop to the panel plus a little context rather than a full desktop. Aim for roughly
-1000–1400px wide; a 2× retina capture scaled down reads best on the marketplace.
+## Still wanted
+
+- **A target actually running in the integrated terminal.** The obvious shot for
+  "Run a target", and the one thing the current set does not show. Run a *real*
+  target — `./build.sh PackVsix`. An earlier attempt used `./build.sh flowchart`,
+  which is not a target in this build; the Fallout banner prints before target
+  resolution, so the failure is just below the fold and easy to miss.
+
+## Capturing
+
+Extension Development Host (<kbd>F5</kbd>) with this repository open — it builds with
+Fallout, so the graph is already populated. Dark theme, to match the banner. Crop to
+the panel plus a little context; roughly 1000–1400px wide reads best, and a 2× retina
+capture scaled down is sharpest.
