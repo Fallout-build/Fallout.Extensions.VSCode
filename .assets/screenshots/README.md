@@ -14,14 +14,7 @@ default branch.
 | `overview.png` | Hero. Explorer file tree, the Fallout Build dock, and the graph in one frame. |
 | `targets-and-source.png` | Build view — the `DependsOn` chain in the tree beside the C# that declares it. |
 | `run-configuration.png` | Run Configuration — a parameter and a secret, with the keychain note visible. |
-
-## Still wanted
-
-- **A target actually running in the integrated terminal.** The obvious shot for
-  "Run a target", and the one thing the current set does not show. Run a *real*
-  target — `./build.sh PackVsix`. An earlier attempt used `./build.sh flowchart`,
-  which is not a target in this build; the Fallout banner prints before target
-  resolution, so the failure is just below the fold and easy to miss.
+| `run-a-target.png` | Run a target — ▶ from the tree, ending on Fallout's green summary table. |
 
 ## Capturing
 

@@ -22,6 +22,8 @@ The tree is a view of your C#: expanding `PackVsix` shows the `DependsOn` chain 
 
 Inline ▶ on any target runs it in an integrated terminal — `./build.ps1` on Windows, `./build.sh` elsewhere. **Run Target with Parameters…** runs the same target with your saved run configuration applied.
 
+![Running PackVsix from the tree, with Fallout's summary table in the terminal](https://raw.githubusercontent.com/Fallout-build/Fallout.Extensions.VSCode/develop/.assets/screenshots/run-a-target.png)
+
 ### Run Configuration
 
 A form for the parameters and secrets your build takes:
