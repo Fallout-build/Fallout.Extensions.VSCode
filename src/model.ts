@@ -19,11 +19,30 @@ export interface Target {
     triggers: string[];
 }
 
+/** A declared build parameter: `parameters[]` in build-graph.json (Fallout#499) or a property of build.schema.json. */
+export interface ParameterDecl {
+    name: string;
+    description?: string;
+    secret: boolean;
+    /** Allowed values, when the parameter is an enumeration or has a value set. */
+    values?: string[];
+    declaredIn?: string;
+}
+
+/** What the build declares, for the Run Configuration view. */
+export interface BuildDeclarations {
+    parameters: ParameterDecl[];
+    /** Verbosity levels the running Fallout version supports; empty when unknown. */
+    verbosityLevels: string[];
+}
+
 /** Parsed contents of build-graph.json. */
 export interface BuildGraph {
     version: number;
     falloutVersion?: string;
     targets: Target[];
+    /** Additive, once the framework emits it (Fallout#499). */
+    parameters?: ParameterDecl[];
 }
 
 /** Where the graph was found: the workspace root plus the absolute file path. */
@@ -77,6 +96,61 @@ export function findGraphFile(): GraphSource | undefined {
 
 export function loadGraph(source: GraphSource): BuildGraph {
     return JSON.parse(fs.readFileSync(source.file, 'utf8'));
+}
+
+const SCHEMA_LOCATIONS = ['.fallout/build.schema.json', '.nuke/build.schema.json'];
+
+/** The framework writes this placeholder as the `default` of every `[Secret]` parameter. */
+const SECRET_DEFAULT_MARKER = 'Secrets must be entered via';
+
+/**
+ * What the build declares: `parameters[]` from the graph when the framework emits it, otherwise
+ * the `[Parameter]` members in build.schema.json (the build writes it next to the graph on every
+ * initialization). Empty when neither exists, which leaves Run Configuration free-form.
+ */
+export function loadDeclarations(root: string | undefined, graph?: BuildGraph): BuildDeclarations {
+    const schema = readSchema(root);
+    return {
+        parameters: graph?.parameters ?? parametersFromSchema(schema),
+        verbosityLevels: schema?.definitions?.Verbosity?.enum ?? [],
+    };
+}
+
+function readSchema(root: string | undefined): any {
+    const file = root
+        ? SCHEMA_LOCATIONS.map(rel => path.join(root, ...rel.split('/'))).find(f => fs.existsSync(f))
+        : undefined;
+    if (!file) {
+        return undefined;
+    }
+    try {
+        return JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch {
+        return undefined; // the build may be mid-write; the next watcher event re-reads it
+    }
+}
+
+// Shape: { definitions, allOf: [ <consumer parameters>, { $ref: FalloutBuild } ] }. Only the first
+// part holds declared parameters; the framework's own (Target, Skip, Verbosity, ...) are not run inputs.
+function parametersFromSchema(schema: any): ParameterDecl[] {
+    const properties: Record<string, any> = schema?.allOf?.[0]?.properties ?? {};
+    return Object.entries(properties)
+        .map(([name, p]): ParameterDecl => {
+            const resolved = resolveRef(schema, p);
+            const values = resolved.enum ?? resolved.items?.enum ?? resolveRef(schema, resolved.items).enum;
+            return {
+                name,
+                description: p.description ?? resolved.description,
+                secret: typeof p.default === 'string' && p.default.startsWith(SECRET_DEFAULT_MARKER),
+                values: Array.isArray(values) && values.length > 0 ? values : undefined,
+            };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function resolveRef(schema: any, node: any): any {
+    const ref: string | undefined = node?.$ref;
+    return ref?.startsWith('#/definitions/') ? schema?.definitions?.[ref.slice('#/definitions/'.length)] ?? {} : node ?? {};
 }
 
 /**
