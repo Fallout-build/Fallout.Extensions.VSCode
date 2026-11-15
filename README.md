@@ -61,7 +61,7 @@ Run the build once to generate it:
 
 ## Versioning
 
-The extension's `major.minor` track the Fallout release line it targets — 10.4.x builds against Fallout 10.4 — while the patch moves independently. A mismatch between the extension and the framework your workspace builds with surfaces as a non-blocking warning.
+The extension's `major.minor` track the Fallout release line it targets — 10.5.x builds against Fallout 10.5 — while the patch moves independently. A mismatch between the extension and the framework your workspace builds with surfaces as a non-blocking warning.
 
 Versions are computed by [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) from `version.json`, the same as the framework itself; the build fails if the declared line drifts from the Fallout version it actually references. Release candidates are published as GitHub pre-releases only.
 

@@ -8,7 +8,7 @@
   // Unlike the framework, prerelease-ness is NOT expressed here. Both marketplaces reject
   // semver prerelease versions outright, so a release candidate is a plain triple carrying a
   // pre-release bit in the VSIX manifest, requested per-build via --pre-release.
-  "version": "10.4",
+  "version": "10.5",
 
   // Every branch that can produce a distributable build (docs/branching-and-release.md).
   // A non-public ref makes NB.GV append -g<sha>, which MarketplaceVersion strips anyway —
