@@ -39,7 +39,9 @@
         "onView:fallout.deployment",
         "onView:fallout.runConfig",
         "workspaceContains:**/.fallout/temp/build-graph.json",
-        "workspaceContains:**/.nuke/temp/build-graph.json"
+        "workspaceContains:**/.nuke/temp/build-graph.json",
+        "workspaceContains:**/.nuke/parameters.json",
+        "workspaceContains:**/.nuke/build.schema.json"
     ],
     "contributes": {
         "viewsContainers": {
@@ -104,6 +106,16 @@
                 "contents": "No Fallout build graph found in this workspace.\nRun the build once to generate `build-graph.json`, then refresh.\n[Plan build (dry run)](command:fallout.planTarget)"
             },
             {
+                "view": "fallout.build",
+                "contents": "This looks like a NUKE build. Fallout can migrate it for you.\n[Migrate from NUKE…](command:fallout.migrateFromNuke)",
+                "when": "fallout.nukeRepo"
+            },
+            {
+                "view": "fallout.buildExplorer",
+                "contents": "This looks like a NUKE build. Fallout can migrate it for you.\n[Migrate from NUKE…](command:fallout.migrateFromNuke)",
+                "when": "fallout.nukeRepo"
+            },
+            {
                 "view": "fallout.deployment",
                 "contents": "No deployment graph yet.\nThe continuous-delivery model (channels → environments → targets) is emitted by a later Fallout build (ADR-0009). This view lights up once the framework writes a `deployment-graph.json`."
             }
@@ -144,6 +156,11 @@
                 "title": "Plan (dry run)",
                 "category": "Fallout",
                 "icon": "$(list-tree)"
+            },
+            {
+                "command": "fallout.migrateFromNuke",
+                "title": "Migrate from NUKE…",
+                "category": "Fallout"
             }
         ],
         "menus": {

@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { BuildGraph, GraphSource, RELATIONS, Relation, Target, checkCompatibility, findGraphFile, hasRelations, loadGraph, relatedTargets, sortTargets } from './model';
 import { GraphPanel } from './graphPanel';
 import { goToTarget } from './goToTarget';
+import { isNukeRepo, migrateFromNuke, promptIfNukeRepo } from './migrate';
 import { RunConfigStore, RunConfigViewProvider } from './runConfig';
 
 const RELATION_LABELS: Record<Relation, string> = {
@@ -216,6 +217,23 @@ export function activate(context: vscode.ExtensionContext): void {
             }
         }),
     );
+
+    // Drives the "migrate from NUKE" welcome content in the empty Build views.
+    const updateNukeContext = () => void vscode.commands.executeCommand(
+        'setContext', 'fallout.nukeRepo', (vscode.workspace.workspaceFolders ?? []).some(f => isNukeRepo(f.uri.fsPath)));
+    updateNukeContext();
+
+    // The migrator renames .nuke/ to .fallout/ - re-evaluate the NUKE content when that lands.
+    const falloutDirWatcher = vscode.workspace.createFileSystemWatcher('**/.fallout');
+    falloutDirWatcher.onDidCreate(() => { updateNukeContext(); provider.refresh(); });
+    falloutDirWatcher.onDidDelete(() => { updateNukeContext(); provider.refresh(); });
+
+    context.subscriptions.push(
+        falloutDirWatcher,
+        vscode.commands.registerCommand('fallout.migrateFromNuke', () => migrateFromNuke(workspaceRoot())),
+    );
+
+    void promptIfNukeRepo(context, workspaceRoot());
 }
 
 export function deactivate(): void {}
