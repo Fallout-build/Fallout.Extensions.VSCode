@@ -26,10 +26,11 @@ Inline ▶ on any target runs it in an integrated terminal — `./build.ps1` on 
 
 ### Run Configuration
 
-A form for the parameters and secrets your build takes:
+A form for the parameters and secrets your build takes. Everything the build declares is listed up front, read from the `build.schema.json` the build writes on every run, so `NuGetApiKey` and its peers appear without typing. Free-form rows remain for anything else.
 
 - **Parameters** are passed as `--name value` arguments and stored per workspace.
-- **Secrets** are stored in VS Code's [SecretStorage](https://code.visualstudio.com/api/references/vscode-api#SecretStorage) — OS keychain-backed — and passed as **environment variables**, so they never reach your shell history, the process list, or a log. Values are never rendered back into the view; only names are.
+- **Verbosity** is a drop-down of the levels your Fallout version supports (`Information` on 10.5+).
+- **Secrets** read *not set* until you enter a value. They are stored in VS Code's [SecretStorage](https://code.visualstudio.com/api/references/vscode-api#SecretStorage) — OS keychain-backed — and passed as **environment variables**, so they never reach your shell history, the process list, or a log. Values are never rendered back into the view; only names are.
 
 ![The Run Configuration view with a parameter and a secret](https://raw.githubusercontent.com/Fallout-build/Fallout.Extensions.VSCode/develop/.assets/screenshots/run-configuration.png)
 

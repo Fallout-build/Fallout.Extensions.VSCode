@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { BuildGraph, GraphSource, Relation, Target, checkCompatibility, findGraphFile, loadGraph } from './model';
+import { BuildGraph, GraphSource, Relation, Target, checkCompatibility, findGraphFile, loadDeclarations, loadGraph } from './model';
 import { GraphPanel } from './graphPanel';
 import { goToTarget } from './goToTarget';
 import { RunConfigStore, RunConfigViewProvider } from './runConfig';
@@ -163,8 +163,14 @@ export function activate(context: vscode.ExtensionContext): void {
         runInTerminal(root, edited, await runConfig.buildEnv());
     };
 
+    const runConfigView = new RunConfigViewProvider(
+        runConfig,
+        context.subscriptions,
+        () => loadDeclarations(workspaceRoot(), provider.graph));
+
     const refreshAll = () => {
         provider.refresh();
+        runConfigView.refreshDeclarations();
         const source = findGraphFile();
         if (source) {
             try {
@@ -180,14 +186,21 @@ export function activate(context: vscode.ExtensionContext): void {
     watcher.onDidCreate(refreshAll);
     watcher.onDidDelete(() => provider.refresh());
 
+    // The build rewrites build.schema.json on every initialization, next to the graph.
+    const schemaWatcher = vscode.workspace.createFileSystemWatcher('**/build.schema.json');
+    schemaWatcher.onDidChange(() => runConfigView.refreshDeclarations());
+    schemaWatcher.onDidCreate(() => runConfigView.refreshDeclarations());
+    schemaWatcher.onDidDelete(() => runConfigView.refreshDeclarations());
+
     context.subscriptions.push(
         // Same provider instance backs both the Fallout-container Build view and the
         // mirrored Explorer dock — one graph, two homes; refresh() updates both.
         vscode.window.registerTreeDataProvider('fallout.build', provider),
         vscode.window.registerTreeDataProvider('fallout.buildExplorer', provider),
         vscode.window.registerTreeDataProvider('fallout.deployment', new DeploymentProvider()),
-        vscode.window.registerWebviewViewProvider('fallout.runConfig', new RunConfigViewProvider(runConfig, context.subscriptions)),
+        vscode.window.registerWebviewViewProvider('fallout.runConfig', runConfigView),
         watcher,
+        schemaWatcher,
         vscode.commands.registerCommand('fallout.refreshTargets', refreshAll),
         vscode.commands.registerCommand('fallout.runTarget', (item?: TargetItem) => {
             if (item?.target) {

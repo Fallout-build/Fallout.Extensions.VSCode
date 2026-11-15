@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { BuildDeclarations } from './model';
 
 /** A build parameter passed to a local run as `--name value`. */
 export interface Parameter {
@@ -82,13 +83,17 @@ function quoteArg(value: string): string {
     return /\s/.test(value) ? `"${value.replace(/"/g, '\\"')}"` : value;
 }
 
-/** The "Run Configuration" webview view — a form for parameters and secret names. */
+/**
+ * The "Run Configuration" webview view — a form for parameters and secrets. Members the build
+ * declares are listed up front; free-form rows remain for anything else.
+ */
 export class RunConfigViewProvider implements vscode.WebviewViewProvider {
     private view: vscode.WebviewView | undefined;
 
     constructor(
         private readonly store: RunConfigStore,
         disposables: vscode.Disposable[],
+        private readonly getDeclarations: () => BuildDeclarations,
     ) {
         disposables.push(this.store.onDidChange(() => this.postState()));
     }
@@ -119,11 +124,17 @@ export class RunConfigViewProvider implements vscode.WebviewViewProvider {
         });
     }
 
+    /** Re-reads what the build declares (called when the graph or schema file changes). */
+    refreshDeclarations(): void {
+        this.postState();
+    }
+
     private postState(): void {
         void this.view?.webview.postMessage({
             type: 'state',
             parameters: this.store.getParameters(),
             secretNames: this.store.getSecretNames(),
+            declared: this.getDeclarations(),
         });
     }
 
@@ -148,11 +159,20 @@ export class RunConfigViewProvider implements vscode.WebviewViewProvider {
   .name { flex: 0 0 40%; font-family: var(--vscode-editor-font-family); }
   .hint { opacity: 0.65; font-size: 11px; margin: 2px 0 8px; }
   .secret-val { font-family: var(--vscode-editor-font-family); opacity: 0.6; }
+  .secret-val.unset { font-style: italic; }
+  select { flex: 1 1 auto; min-width: 0; background: var(--vscode-dropdown-background); color: var(--vscode-dropdown-foreground);
+           border: 1px solid var(--vscode-dropdown-border, transparent); padding: 3px 6px; border-radius: 2px; }
 </style>
 </head>
 <body>
+  <div id="verbosityBlock" hidden>
+    <h4>Verbosity</h4>
+    <div class="row"><select id="verbosity"></select></div>
+  </div>
+
   <h4>Parameters</h4>
-  <div class="hint">Passed to local runs as <code>--name value</code>.</div>
+  <div class="hint">Passed to local runs as <code>--name value</code>. Empty values are not passed.</div>
+  <div id="declaredParams"></div>
   <div id="params"></div>
   <div class="row">
     <input id="pName" class="name" placeholder="name" />
@@ -162,6 +182,7 @@ export class RunConfigViewProvider implements vscode.WebviewViewProvider {
 
   <h4>Secrets</h4>
   <div class="hint">Stored in the OS keychain (SecretStorage); passed as environment variables. Values are never shown.</div>
+  <div id="declaredSecrets"></div>
   <div id="secrets"></div>
   <div class="row">
     <input id="sName" class="name" placeholder="name" />
@@ -173,29 +194,114 @@ export class RunConfigViewProvider implements vscode.WebviewViewProvider {
   const vscodeApi = acquireVsCodeApi();
   const el = id => document.getElementById(id);
 
+  const VERBOSITY = 'verbosity';
+  const send = msg => vscodeApi.postMessage(msg);
+  const lower = s => s.toLowerCase();
+
+  // An empty value clears the parameter instead of passing "--name ".
+  function setOrClear(name, value) {
+    send(value === '' ? { type: 'removeParameter', name } : { type: 'setParameter', name, value });
+  }
+
+  function valueControl(decl, current) {
+    if (decl.values && decl.values.length > 0) {
+      const sel = document.createElement('select');
+      for (const v of ['', ...decl.values]) {
+        const o = document.createElement('option'); o.value = v; o.textContent = v === '' ? '(default)' : v;
+        sel.append(o);
+      }
+      sel.value = current;
+      sel.addEventListener('change', () => setOrClear(decl.name, sel.value));
+      return sel;
+    }
+    const input = document.createElement('input'); input.value = current;
+    input.addEventListener('change', () => setOrClear(decl.name, input.value));
+    return input;
+  }
+
   function render(state) {
+    const declared = state.declared || { parameters: [], verbosityLevels: [] };
+    const stored = new Map(state.parameters.map(p => [lower(p.name), p.value]));
+    const declaredParams = declared.parameters.filter(p => !p.secret);
+    const declaredSecrets = declared.parameters.filter(p => p.secret);
+    const declaredNames = new Set(declared.parameters.map(p => lower(p.name)));
+
+    // Verbosity: levels come from the build's schema, so 10.5's Information appears only on 10.5+.
+    const hasVerbosity = declared.verbosityLevels.length > 0;
+    el('verbosityBlock').hidden = !hasVerbosity;
+    if (hasVerbosity) {
+      const sel = el('verbosity');
+      sel.innerHTML = '';
+      for (const v of ['', ...declared.verbosityLevels]) {
+        const o = document.createElement('option'); o.value = v; o.textContent = v === '' ? '(default)' : v;
+        sel.append(o);
+      }
+      sel.value = stored.get(VERBOSITY) ?? '';
+      sel.onchange = () => setOrClear(VERBOSITY, sel.value);
+    }
+
+    const dp = el('declaredParams');
+    dp.innerHTML = '';
+    for (const d of declaredParams) {
+      const row = document.createElement('div');
+      row.className = 'row';
+      const name = document.createElement('span'); name.className = 'name'; name.textContent = d.name;
+      if (d.description) { name.title = d.description; }
+      row.append(name, valueControl(d, stored.get(lower(d.name)) ?? ''));
+      dp.append(row);
+    }
+
+    // Free-form rows: stored parameters the build does not declare (verbosity has its own control).
     const params = el('params');
     params.innerHTML = '';
     for (const p of state.parameters) {
+      if (declaredNames.has(lower(p.name)) || (hasVerbosity && lower(p.name) === VERBOSITY)) { continue; }
       const row = document.createElement('div');
       row.className = 'row';
       const name = document.createElement('span'); name.className = 'name'; name.textContent = p.name;
       const val = document.createElement('input'); val.value = p.value;
-      val.addEventListener('change', () => vscodeApi.postMessage({ type: 'setParameter', name: p.name, value: val.value }));
+      val.addEventListener('change', () => send({ type: 'setParameter', name: p.name, value: val.value }));
       const rm = document.createElement('button'); rm.className = 'icon'; rm.textContent = '✕';
-      rm.addEventListener('click', () => vscodeApi.postMessage({ type: 'removeParameter', name: p.name }));
+      rm.addEventListener('click', () => send({ type: 'removeParameter', name: p.name }));
       row.append(name, val, rm);
       params.append(row);
     }
+
+    // Declared secrets read "not set" until a value is stored; values never reach this page.
+    const ds = el('declaredSecrets');
+    ds.innerHTML = '';
+    for (const d of declaredSecrets) {
+      const isSet = state.secretNames.includes(d.name);
+      const row = document.createElement('div');
+      row.className = 'row';
+      const name = document.createElement('span'); name.className = 'name'; name.textContent = d.name;
+      if (d.description) { name.title = d.description; }
+      row.append(name);
+      if (isSet) {
+        const masked = document.createElement('span'); masked.className = 'secret-val'; masked.textContent = '••••••••';
+        masked.style.flex = '1 1 auto';
+        const rm = document.createElement('button'); rm.className = 'icon'; rm.textContent = '✕';
+        rm.addEventListener('click', () => send({ type: 'removeSecret', name: d.name }));
+        row.append(masked, rm);
+      } else {
+        const input = document.createElement('input'); input.type = 'password'; input.placeholder = 'not set';
+        const set = document.createElement('button'); set.textContent = 'Set';
+        set.addEventListener('click', () => { if (input.value) { send({ type: 'setSecret', name: d.name, value: input.value }); } });
+        row.append(input, set);
+      }
+      ds.append(row);
+    }
+
     const secrets = el('secrets');
     secrets.innerHTML = '';
     for (const name of state.secretNames) {
+      if (declaredSecrets.some(d => d.name === name)) { continue; }
       const row = document.createElement('div');
       row.className = 'row';
       const n = document.createElement('span'); n.className = 'name'; n.textContent = name;
       const masked = document.createElement('span'); masked.className = 'secret-val'; masked.textContent = '••••••••';
       const rm = document.createElement('button'); rm.className = 'icon'; rm.textContent = '✕';
-      rm.addEventListener('click', () => vscodeApi.postMessage({ type: 'removeSecret', name }));
+      rm.addEventListener('click', () => send({ type: 'removeSecret', name }));
       row.append(n, masked, rm);
       secrets.append(row);
     }
