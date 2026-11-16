@@ -39,12 +39,13 @@ jobs:
           fetch-depth: 0
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.head_ref }}
-      - name: 'Cache: .fallout/temp, ~/.nuget/packages'
+      - name: 'Cache: .fallout/temp, ~/.nuget/packages, .vscode-test'
         uses: actions/cache@v6
         with:
           path: |
             .fallout/temp
             ~/.nuget/packages
+            .vscode-test
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props') }}
       - name: 'Setup: .NET SDK'
         uses: actions/setup-dotnet@v6
@@ -52,5 +53,5 @@ jobs:
           global-json-file: global.json
       - name: 'Restore: dotnet tools'
         run: dotnet tool restore
-      - name: 'Run: PackVsix'
-        run: dotnet fallout PackVsix
+      - name: 'Run: TestVsix, PackVsix'
+        run: dotnet fallout TestVsix PackVsix

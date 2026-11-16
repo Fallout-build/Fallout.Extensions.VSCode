@@ -34,10 +34,16 @@ suite('extension host', () => {
             const item = { target: { name: 'Compile', declaredIn, default: true, listed: true, dependsOn: [], after: [], triggeredBy: [], triggers: [] } };
             await vscode.commands.executeCommand('fallout.goToTarget', item);
 
-            const editor = await waitFor(() =>
-                vscode.window.activeTextEditor?.document.fileName.endsWith('.cs') ? vscode.window.activeTextEditor : undefined);
+            // The command is fire-and-forget, and the editor becomes active before its selection
+            // is applied, so wait for the final state rather than the first sign of an editor.
+            const editor = await waitFor(() => {
+                const active = vscode.window.activeTextEditor;
+                return active
+                    && path.basename(active.document.fileName) === file
+                    && /Target Compile =>/.test(active.document.lineAt(active.selection.start.line).text)
+                    ? active : undefined;
+            }, `${file} open with the selection on "Target Compile =>"`);
             assert.equal(path.basename(editor.document.fileName), file);
-            assert.match(editor.document.lineAt(editor.selection.start.line).text, /Target Compile =>/);
         });
     }
 
@@ -45,12 +51,12 @@ suite('extension host', () => {
         await vscode.commands.executeCommand('fallout.showGraph');
         const tab = await waitFor(() => vscode.window.tabGroups.all
             .flatMap(g => g.tabs)
-            .find(t => t.label === 'Fallout Build Graph'));
+            .find(t => t.label === 'Fallout Build Graph'), 'a tab labelled "Fallout Build Graph"');
         assert.equal(tab.label, 'Fallout Build Graph');
     });
 });
 
-async function waitFor<T>(probe: () => T | undefined, timeoutMs = 15000): Promise<T> {
+async function waitFor<T>(probe: () => T | undefined, what: string, timeoutMs = 15000): Promise<T> {
     const deadline = Date.now() + timeoutMs;
     for (;;) {
         const value = probe();
@@ -58,7 +64,7 @@ async function waitFor<T>(probe: () => T | undefined, timeoutMs = 15000): Promis
             return value;
         }
         if (Date.now() > deadline) {
-            throw new Error('timed out waiting for condition');
+            throw new Error(`timed out waiting for ${what}`);
         }
         await new Promise(r => setTimeout(r, 100));
     }

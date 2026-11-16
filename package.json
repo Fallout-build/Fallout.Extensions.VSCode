@@ -197,11 +197,12 @@
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
         "compile:test": "tsc -p tsconfig.test.json",
-        "test:unit": "npm run compile:test && node --test \"out-test/test/unit/**/*.test.js\"",
+        "test:unit": "npm run compile:test && node test/run-node-tests.js out-test/test/unit",
         "test:integration": "npm run compile && npm run compile:test && vscode-test",
         "test": "npm run test:unit && npm run test:webview && npm run test:integration",
-        "test:contract": "npm run compile:test && dotnet fallout --plan && node --test \"out-test/test/contract/**/*.test.js\"",
-        "test:webview": "npm run compile:test && node --test \"out-test/test/webview/**/*.test.js\""
+        "test:contract": "npm run compile:test && dotnet fallout --plan && node test/run-node-tests.js out-test/test/contract",
+        "test:webview": "npm run compile:test && node test/run-node-tests.js out-test/test/webview",
+        "test:contract:check": "npm run compile:test && node test/run-node-tests.js out-test/test/contract"
     },
     "dependencies": {
         "mermaid": "^11.4.1"
