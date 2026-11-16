@@ -28,16 +28,20 @@ export class RunConfigStore {
         return this.context.workspaceState.get<Parameter[]>(PARAMS_KEY, []);
     }
 
+    /** Names compare ignoring case, like the framework's argument parser. A blank value clears the parameter. */
     async setParameter(name: string, value: string): Promise<void> {
-        const params = this.getParameters().filter(p => p.name !== name);
-        params.push({ name, value });
+        const key = name.trim().toLowerCase();
+        const trimmed = value.trim();
+        const params = this.getParameters().filter(p => p.name.toLowerCase() !== key);
+        if (trimmed !== '') { params.push({ name: name.trim(), value: trimmed }); }
         params.sort((a, b) => a.name.localeCompare(b.name));
         await this.context.workspaceState.update(PARAMS_KEY, params);
         this.onDidChangeEmitter.fire();
     }
 
     async removeParameter(name: string): Promise<void> {
-        await this.context.workspaceState.update(PARAMS_KEY, this.getParameters().filter(p => p.name !== name));
+        const key = name.trim().toLowerCase();
+        await this.context.workspaceState.update(PARAMS_KEY, this.getParameters().filter(p => p.name.toLowerCase() !== key));
         this.onDidChangeEmitter.fire();
     }
 
@@ -62,6 +66,7 @@ export class RunConfigStore {
     /** Parameters rendered as a CLI argument string, e.g. `--configuration Release`. */
     buildArgs(): string {
         return this.getParameters()
+            .filter(p => p.value.trim() !== '')
             .map(p => `--${p.name} ${quoteArg(p.value)}`)
             .join(' ');
     }
@@ -200,17 +205,28 @@ export class RunConfigViewProvider implements vscode.WebviewViewProvider {
 
   // An empty value clears the parameter instead of passing "--name ".
   function setOrClear(name, value) {
+    value = value.trim();
     send(value === '' ? { type: 'removeParameter', name } : { type: 'setParameter', name, value });
+  }
+
+  // Fills a drop-down. A stored value the build no longer lists stays visible, marked unsupported,
+  // because it is still passed to the build until the user changes it.
+  function fillSelect(sel, values, current) {
+    sel.innerHTML = '';
+    const all = ['', ...values];
+    if (current !== '' && !values.includes(current)) { all.push(current); }
+    for (const v of all) {
+      const o = document.createElement('option'); o.value = v;
+      o.textContent = v === '' ? '(default)' : values.includes(v) || v === '' ? v : v + ' (unsupported)';
+      sel.append(o);
+    }
+    sel.value = current;
   }
 
   function valueControl(decl, current) {
     if (decl.values && decl.values.length > 0) {
       const sel = document.createElement('select');
-      for (const v of ['', ...decl.values]) {
-        const o = document.createElement('option'); o.value = v; o.textContent = v === '' ? '(default)' : v;
-        sel.append(o);
-      }
-      sel.value = current;
+      fillSelect(sel, decl.values, current);
       sel.addEventListener('change', () => setOrClear(decl.name, sel.value));
       return sel;
     }
@@ -231,12 +247,7 @@ export class RunConfigViewProvider implements vscode.WebviewViewProvider {
     el('verbosityBlock').hidden = !hasVerbosity;
     if (hasVerbosity) {
       const sel = el('verbosity');
-      sel.innerHTML = '';
-      for (const v of ['', ...declared.verbosityLevels]) {
-        const o = document.createElement('option'); o.value = v; o.textContent = v === '' ? '(default)' : v;
-        sel.append(o);
-      }
-      sel.value = stored.get(VERBOSITY) ?? '';
+      fillSelect(sel, declared.verbosityLevels, stored.get(VERBOSITY) ?? '');
       sel.onchange = () => setOrClear(VERBOSITY, sel.value);
     }
 
