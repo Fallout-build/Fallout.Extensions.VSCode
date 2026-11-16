@@ -5,6 +5,9 @@ import * as fs from 'fs';
 /** How one target relates to another in the build graph. */
 export type Relation = 'dependsOn' | 'after' | 'triggeredBy' | 'triggers';
 
+/** Every relation, in the order the tree shows them as children. */
+export const RELATIONS: readonly Relation[] = ['dependsOn', 'after', 'triggeredBy', 'triggers'];
+
 /** A single build target, as emitted into build-graph.json. */
 export interface Target {
     name: string;
@@ -103,4 +106,28 @@ export function toMermaid(graph: BuildGraph): string {
     lines.push('  classDef defaultTarget stroke-width:3px,font-weight:bold');
     lines.push('  classDef unlisted opacity:0.45,stroke-dasharray:3 3');
     return lines.join('\n');
+}
+
+/** Whether a target has any relation to expand in the tree. */
+export function hasRelations(target: Target): boolean {
+    return RELATIONS.some(r => target[r].length > 0);
+}
+
+/** Root order for the tree: listed targets first, then alphabetical. */
+export function sortTargets(targets: readonly Target[]): Target[] {
+    return targets
+        .slice()
+        .sort((a, b) => Number(b.listed) - Number(a.listed) || a.name.localeCompare(b.name));
+}
+
+/**
+ * The expandable children of a target: one entry per related target, grouped by relation
+ * in {@link RELATIONS} order. Names the graph doesn't declare are dropped.
+ */
+export function relatedTargets(target: Target, byName: ReadonlyMap<string, Target>): { relation: Relation; target: Target }[] {
+    return RELATIONS.flatMap(relation =>
+        target[relation]
+            .map(name => byName.get(name))
+            .filter((t): t is Target => t !== undefined)
+            .map(t => ({ relation, target: t })));
 }
