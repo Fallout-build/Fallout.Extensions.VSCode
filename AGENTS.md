@@ -27,13 +27,13 @@ The repo holds three things, and they are easy to confuse:
 - **Extension:** TypeScript 5.9 → `tsc` → `out/`. `strict: true`, CommonJS, ES2022. VS Code engine `^1.85.0`. One runtime dependency: `mermaid`.
 - **Build:** .NET SDK pinned in `global.json` (`10.0.100`, `rollForward: latestMinor`); Fallout 10.4.0 as the `fallout.globaltool` (`.config/dotnet-tools.json`) and the `Fallout.Common` package reference.
 - `nuget.config` clears sources and pins nuget.org only, so a machine-level feed can't shadow the pinned Fallout packages.
-- **Tests are two layers** (`npm test` runs both; details in [CONTRIBUTING.md](CONTRIBUTING.md#tests)). **Unit** (`npm run test:unit`, `node:test`, plain Node, ~1s) covers `src/graph.ts`, the vscode-free logic that `src/model.ts` re-exports — keep new logic there, not behind a `vscode` import, so it stays testable. **Extension-host** (`npm run test:integration`, `@vscode/test-cli`) launches a real VS Code on `test/fixtures/workspace` and drives the registered commands; it downloads VS Code on first run and opens a window briefly. Neither runs in CI yet, and the graph webview has no test ([#37](https://github.com/Fallout-build/Fallout.Extensions.VSCode/issues/37)).
+- **Tests are four layers** (`npm test` runs unit, webview and extension-host; details in [CONTRIBUTING.md](CONTRIBUTING.md#tests)). **Unit** (`npm run test:unit`, `node:test`, plain Node, ~1s) covers `src/graph.ts`, the vscode-free logic that `src/model.ts` re-exports — keep new logic there, not behind a `vscode` import, so it stays testable. **Webview** (`npm run test:webview`, `playwright-core`) loads the graph page from `src/graphPage.ts` in an installed Chrome or Edge (`PLAYWRIGHT_CHANNEL` overrides) with `acquireVsCodeApi` stubbed — keep the page HTML in that vscode-free file. **Extension-host** (`npm run test:integration`, `@vscode/test-cli`) launches a real VS Code on `test/fixtures/workspace` and drives the registered commands; it downloads VS Code on first run and opens a window briefly. **Contract** (`npm run test:contract`, needs .NET) regenerates the graph with this repo's own build (`dotnet fallout --plan`) and checks the extension's reading of it; `FALLOUT_GRAPH=<path>` points it at another framework version's graph. It is not part of `npm test`. **The PR gate runs all four** (`dotnet fallout TestVsix PackVsix`; the contract check there reuses the graph the run itself emitted, so it skips the regeneration).
 
 ## Common commands
 
 ```bash
 ./build.sh                    # default target: PackVsix (./build.ps1 on Windows)
-./build.sh PackVsix           # what the PR gate runs -> fallout.vsix
+./build.sh TestVsix PackVsix  # what the PR gate runs: all test suites, then -> fallout.vsix
 ./build.sh --plan             # what would run, without running it
 ./build.sh --help             # list all targets and parameters
 
@@ -87,7 +87,7 @@ Mermaid edge semantics **match the framework's `--plan` HTML** — solid = execu
 
 ## Useful pointers
 
-- **`build/Build.cs` is small on purpose.** Reusable target logic belongs in the plugin's components (`IHasVsix` / `IPackVsix` / `IPublishVsix`), which mirror `Fallout.Components`' `IRestore` / `IPack` / `IPublish` — registries declared as data, narrowed per run by a CLI selector, validated up front.
+- **`build/Build.cs` is small on purpose.** Reusable target logic belongs in the plugin's components (`IHasVsix` / `IPackVsix` / `ITestVsix` / `IPublishVsix`), which mirror `Fallout.Components`' `IRestore` / `IPack` / `IPublish` — registries declared as data, narrowed per run by a CLI selector, validated up front.
 - **`ovsx` ignores `--pre-release` for a prepackaged `.vsix`** (it reads the manifest), and `vsce publish --pre-release` on a `--packagePath` is only an *assertion* against the package. The bit set at package time is what decides.
 - **Tool resolution prefers `node_modules/.bin` over `PATH`**, since both CLIs are conventionally dev dependencies. On Windows it must pick the `.cmd` shim — invoking the extensionless script there starts a shell, not the tool.
 - **Installing is out of scope by design.** The build packages and publishes; it never touches your editor. A manually installed `.vsix` doesn't auto-update anyway — VS Code only tracks versions for extensions it obtained from a gallery (see [#6](https://github.com/Fallout-build/Fallout.Extensions.VSCode/issues/6)).

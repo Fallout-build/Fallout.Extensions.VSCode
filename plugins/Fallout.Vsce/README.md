@@ -15,7 +15,7 @@ VsceTasks.VscePackage(_ => _
     .EnablePreRelease());
 ```
 
-**Components** — `IHasVsix`, `IPackVsix`, `IPublishVsix`, mirroring `Fallout.Components`' `IRestore` / `IPack` / `IPublish`. Registries are declared as data and narrowed per run, exactly as `IPublish` does for NuGet feeds:
+**Components** — `IHasVsix`, `IPackVsix`, `ITestVsix`, `IPublishVsix`, mirroring `Fallout.Components`' `IRestore` / `IPack` / `IPublish`. Registries are declared as data and narrowed per run, exactly as `IPublish` does for NuGet feeds:
 
 ```csharp
 class Build : FalloutBuild, IPublishVsix

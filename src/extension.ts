@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { BuildGraph, GraphSource, Relation, Target, checkCompatibility, findGraphFile, loadGraph } from './model';
+import { BuildGraph, GraphSource, RELATIONS, Relation, Target, checkCompatibility, findGraphFile, hasRelations, loadGraph, relatedTargets, sortTargets } from './model';
 import { GraphPanel } from './graphPanel';
 import { goToTarget } from './goToTarget';
 import { RunConfigStore, RunConfigViewProvider } from './runConfig';
@@ -42,7 +42,7 @@ class TargetItem extends vscode.TreeItem {
         const lines = [
             `**${target.name}**${target.default ? ' _(default target)_' : ''}${target.listed ? '' : ' _(unlisted)_'}`,
             target.description ?? undefined,
-            ...(['dependsOn', 'after', 'triggeredBy', 'triggers'] as Relation[])
+            ...RELATIONS
                 .filter(r => target[r].length > 0)
                 .map(r => `${RELATION_LABELS[r]}: ${target[r].join(', ')}`),
         ];
@@ -73,11 +73,8 @@ class FalloutTargetsProvider implements vscode.TreeDataProvider<TargetItem> {
             return this.loadRoots();
         }
         // Children: one entry per related target, recursively expandable.
-        return (['dependsOn', 'after', 'triggeredBy', 'triggers'] as Relation[]).flatMap(relation =>
-            element.target[relation]
-                .map(name => this.byName.get(name))
-                .filter((t): t is Target => t !== undefined)
-                .map(t => new TargetItem(t, relation, this.hasRelations(t))));
+        return relatedTargets(element.target, this.byName)
+            .map(({ relation, target }) => new TargetItem(target, relation, hasRelations(target)));
     }
 
     private loadRoots(): TargetItem[] {
@@ -95,14 +92,7 @@ class FalloutTargetsProvider implements vscode.TreeDataProvider<TargetItem> {
         }
         checkCompatibility(this.graph, this.extensionVersion);
         this.byName = new Map(this.graph.targets.map(t => [t.name, t]));
-        return this.graph.targets
-            .slice()
-            .sort((a, b) => Number(b.listed) - Number(a.listed) || a.name.localeCompare(b.name))
-            .map(t => new TargetItem(t, undefined, this.hasRelations(t)));
-    }
-
-    private hasRelations(target: Target): boolean {
-        return target.dependsOn.length + target.after.length + target.triggeredBy.length + target.triggers.length > 0;
+        return sortTargets(this.graph.targets).map(t => new TargetItem(t, undefined, hasRelations(t)));
     }
 }
 

@@ -8,7 +8,7 @@ The governing principle: **the build is defined in C#, not in YAML.** Every work
 
 | File | Trigger | Does | Generated? |
 |---|---|---|---|
-| `build.yml` | PR to `develop`, `main`, `support/*` | `PackVsix` — the required check | **Yes**, from `[GitHubActions]` |
+| `build.yml` | PR to `develop`, `main`, `support/*` | `TestVsix` then `PackVsix` — the required check | **Yes**, from `[GitHubActions]` |
 | `build-skip.yml` | PR touching only `**/*.md` | Nothing; reports the same check | No |
 | `nightly.yml` | push to `develop` | Packs, publishes the rolling `nightly` release | No |
 | `publish.yml` | `v*` tag push, or dispatch | Packs, releases, optionally promotes to marketplaces | No |
@@ -16,7 +16,7 @@ The governing principle: **the build is defined in C#, not in YAML.** Every work
 ```mermaid
 flowchart LR
     PR["Pull request"] --> G{"Only<br/>*.md?"}
-    G -->|No| B["build.yml<br/>PackVsix"]
+    G -->|No| B["build.yml<br/>TestVsix + PackVsix"]
     G -->|Yes| S["build-skip.yml<br/>no-op"]
     B --> C(["ubuntu-latest ✓"])
     S --> C
@@ -96,7 +96,7 @@ The promotion jobs publish the exact artifact `pack` produced (`--skip PackVsix`
 There is no separate CI script. The runner invokes the same targets you do:
 
 ```bash
-./build.ps1 PackVsix              # what the PR gate runs
+./build.ps1 TestVsix PackVsix     # what the PR gate runs
 dotnet fallout --plan             # what would run, without running it
 dotnet fallout VerifyVsixCredentials   # proves marketplace tokens, publishes nothing
 ```
@@ -108,4 +108,5 @@ To run the extension itself rather than the build, see [developing.md](developin
 - **`PublicRelease: true`** is set on any job that checks out a tag. A detached HEAD matches none of `version.json`'s branch refspecs, so without it Nerdbank.GitVersioning appends a git-height suffix and the marketplace version stops being a clean triple.
 - **`fetch-depth: 0`** is required wherever the version is computed — NB.GV needs full history.
 - **Boolean workflow inputs arrive as strings** from the REST API, and therefore from `gh workflow run`. Conditions compare against both `true` and `'true'`; a bare `== true` silently skips while reporting success.
+- **The gate runs the tests on the runner's own tools.** `ITestVsix` runs the npm test scripts: unit, webview (the preinstalled Chrome), extension-host (a real VS Code, under `xvfb-run` when there is no display, cached in `.vscode-test`), and the contract check against the graph that run emitted. `test/run-node-tests.js` lists test files explicitly because `node --test <dir|glob>` differs between Node versions and the generated workflow installs none.
 - **`--skip PackVsix` prunes the whole upstream chain**, `RestoreVsix` included — nothing else needs it, so Fallout skips it too. The promotion jobs therefore install the Node toolchain themselves: `vsce` and `ovsx` are dev dependencies, and `IHasVsix.ResolveNodeTool` looks in `node_modules/.bin` before `PATH`. Without that step `PublishVsix` fails resolving its tools before it reaches a registry — which is exactly how the first promotion of v10.4.31 failed.

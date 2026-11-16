@@ -36,7 +36,10 @@ using Fallout.Vsce;
     // more clever here (negations, directory carve-outs) makes the two sets drift, and a
     // gap between them means a PR blocked forever on a required check that never fires.
     OnPullRequestExcludePaths = ["**/*.md"],
-    InvokedTargets = [nameof(IPackVsix.PackVsix)],
+    // Tests first: a red suite should stop the gate before anything is packaged.
+    InvokedTargets = [nameof(ITestVsix.TestVsix), nameof(IPackVsix.PackVsix)],
+    // VS Code (~150 MB) is downloaded once by the extension-host tests; keep it between runs.
+    CacheIncludePatterns = [".fallout/temp", "~/.nuget/packages", ".vscode-test"],
     PublishArtifacts = false)]
 partial class Build
 {

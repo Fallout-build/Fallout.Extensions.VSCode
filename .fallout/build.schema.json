@@ -28,6 +28,7 @@
         "PackVsix",
         "PublishVsix",
         "RestoreVsix",
+        "TestVsix",
         "VerifyVsixCredentials"
       ]
     },
