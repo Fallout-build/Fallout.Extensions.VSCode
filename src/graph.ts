@@ -11,7 +11,8 @@ export const RELATIONS: readonly Relation[] = ['dependsOn', 'after', 'triggeredB
 /** A single build target, as emitted into build-graph.json. */
 export interface Target {
     name: string;
-    description?: string;
+    /** Emitted as `null` (not omitted) when a target has no description. */
+    description?: string | null;
     default: boolean;
     listed: boolean;
     /** Declaring C# type (class or interface) — disambiguates go-to-definition. */
