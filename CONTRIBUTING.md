@@ -33,7 +33,7 @@ Contributions are welcome. As a community, we want to help each other, provide c
 - Branch from `develop`. Name it `feature/<slug>`, `bugfix/<slug>`, `chore/<slug>`, or `docs/<slug>`.
 - Make sure your employer allows the contribution.
 - Build it the way CI does: `./build.sh PackVsix` (or `./build.ps1 PackVsix` on Windows). The bootstrappers are thin — they provision .NET if needed, run `dotnet tool restore`, then `dotnet fallout "$@"`. The `fallout.globaltool` version is pinned in `.config/dotnet-tools.json`.
-- **There is no test suite** — no test runner, no `npm test`, no `.vscode-test` harness. Verification is `tsc` clean plus actually running the extension: F5 in VS Code for an Extension Development Host, or sideload the packed `.vsix`. Say in the PR how you verified. Introducing a test framework is a deliberate decision — raise it as an issue first rather than bundling it into an unrelated PR.
+- **Not running `npm test`** — it must pass, and new logic should come with a test (see [Tests](#tests)). Anything the tests can't reach (the graph webview, terminal runs) still needs F5 in an Extension Development Host or a sideloaded `.vsix`; say in the PR how you verified.
 
 ### When writing the PR
 
@@ -68,6 +68,19 @@ Merge commits are disabled and linear history is enforced on every protected bra
 | anything → `develop` (port-back) | **Squash** | It's a working branch like any other. |
 
 GitHub can't enforce a method per branch, so this is discipline rather than configuration. Both buttons stay enabled because both are correct somewhere. Reasoning, and why rebasing across two long-lived branches is safe here, in [docs/branching-and-release.md](docs/branching-and-release.md#merging).
+
+## Tests
+
+```bash
+npm test                  # unit + extension-host
+npm run test:unit         # node:test, plain Node, ~1s
+npm run test:integration  # real VS Code (downloaded to .vscode-test/ on first run)
+```
+
+- **Unit** (`test/unit`) covers `src/graph.ts`: graph parsing, discovery, compatibility checks, Mermaid output. Code that must be unit-testable cannot import `vscode` — put it in `graph.ts`; `model.ts` re-exports it.
+- **Extension-host** (`test/integration`) activates the extension on `test/fixtures/workspace` and runs the commands for real. It briefly opens a VS Code window.
+- Fixtures live in `test/fixtures/`. They are not compiled and not shipped (`.vscodeignore`).
+- Not covered yet: the graph webview ([#37](https://github.com/Fallout-build/Fallout.Extensions.VSCode/issues/37)). CI does not run the tests yet.
 
 ## Releases
 

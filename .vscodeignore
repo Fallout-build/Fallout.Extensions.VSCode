@@ -4,6 +4,10 @@
 .claude/**
 src/**
 out/**/*.map
+out-test/**
+test/**
+.vscode-test.mjs
+tsconfig.test.json
 **/*.ts
 tsconfig.json
 .gitignore

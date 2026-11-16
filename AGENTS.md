@@ -27,7 +27,7 @@ The repo holds three things, and they are easy to confuse:
 - **Extension:** TypeScript 5.9 → `tsc` → `out/`. `strict: true`, CommonJS, ES2022. VS Code engine `^1.85.0`. One runtime dependency: `mermaid`.
 - **Build:** .NET SDK pinned in `global.json` (`10.0.100`, `rollForward: latestMinor`); Fallout 10.4.0 as the `fallout.globaltool` (`.config/dotnet-tools.json`) and the `Fallout.Common` package reference.
 - `nuget.config` clears sources and pins nuget.org only, so a machine-level feed can't shadow the pinned Fallout packages.
-- **There is no test suite** — no test runner, no `npm test`, no `.vscode-test` harness. Verification is `tsc` plus running the extension (F5) or sideloading the packed `.vsix`. Don't invent a test command; if you add a framework, that's a deliberate decision to raise.
+- **Tests are two layers** (`npm test` runs both; details in [CONTRIBUTING.md](CONTRIBUTING.md#tests)). **Unit** (`npm run test:unit`, `node:test`, plain Node, ~1s) covers `src/graph.ts`, the vscode-free logic that `src/model.ts` re-exports — keep new logic there, not behind a `vscode` import, so it stays testable. **Extension-host** (`npm run test:integration`, `@vscode/test-cli`) launches a real VS Code on `test/fixtures/workspace` and drives the registered commands; it downloads VS Code on first run and opens a window briefly. Neither runs in CI yet, and the graph webview has no test ([#37](https://github.com/Fallout-build/Fallout.Extensions.VSCode/issues/37)).
 
 ## Common commands
 

@@ -45,7 +45,7 @@ Lead with a one-line summary, then short "what changed" bullets. Link the issue 
 - **Functional titles, no conventional-commit prefixes.** Not `feat:`/`fix:`/`chore:`. Good: "Jump to the declaring type when several components declare a target".
 - **One category label**: `enhancement`, `bug`, `breaking-change`, `security`, `documentation`, `dependencies` — or `skip-changelog` for housekeeping.
 - **Breaking change** here means removing or renaming a command ID, setting, or view ID; dropping support for a VS Code or Fallout version; or changing the `build-graph.json` contract. Label it and add a `⚠️ Breaking change` callout.
-- Say how you verified. There is no test suite, so "compiles" is not verification — name what you ran in the Extension Development Host.
+- Say how you verified. "Compiles" is not verification — say that `npm test` passes, and name what you ran in the Extension Development Host for anything the tests don't reach (the graph webview, terminal runs).
 
 ## Commit messages
 

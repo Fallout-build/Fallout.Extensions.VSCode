@@ -1,0 +1,11 @@
+{
+    "version": 1,
+    "falloutVersion": "10.4.0",
+    "targets": [
+        { "name": "Clean",   "default": false, "listed": true,  "declaredIn": "Build", "dependsOn": [], "after": [], "triggeredBy": [], "triggers": [] },
+        { "name": "Restore", "default": false, "listed": true,  "declaredIn": "Build", "dependsOn": [], "after": ["Clean"], "triggeredBy": [], "triggers": [] },
+        { "name": "Compile", "default": true,  "listed": true,  "description": "Builds the solution", "declaredIn": "Build", "dependsOn": ["Restore"], "after": [], "triggeredBy": [], "triggers": ["Pack"] },
+        { "name": "Pack",    "default": false, "listed": true,  "declaredIn": "Build", "dependsOn": [], "after": [], "triggeredBy": ["Compile"], "triggers": [] },
+        { "name": "Hidden",  "default": false, "listed": false, "declaredIn": "Build", "dependsOn": [], "after": [], "triggeredBy": [], "triggers": [] }
+    ]
+}

@@ -23,3 +23,8 @@ memory/
 
 # macOS
 .DS_Store
+
+out-test/
+
+# Test fixtures hold graphs on purpose (the rule above is for real build output).
+!/test/fixtures/**/.fallout/temp/
