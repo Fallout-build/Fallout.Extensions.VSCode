@@ -72,17 +72,19 @@ GitHub can't enforce a method per branch, so this is discipline rather than conf
 ## Tests
 
 ```bash
-npm test                  # unit + extension-host
+npm test                  # unit + webview + extension-host
 npm run test:unit         # node:test, plain Node, ~1s
+npm run test:webview      # graph page in Chrome/Edge via Playwright, no VS Code
 npm run test:integration  # real VS Code (downloaded to .vscode-test/ on first run)
 npm run test:contract     # needs .NET: regenerates the graph with the real build, then checks it
 ```
 
 - **Unit** (`test/unit`) covers `src/graph.ts`: graph parsing, discovery, compatibility checks, Mermaid output. Code that must be unit-testable cannot import `vscode` — put it in `graph.ts`; `model.ts` re-exports it.
+- **Webview** (`test/webview`) loads the graph page (`src/graphPage.ts`) in an installed Chrome or Edge with `acquireVsCodeApi` stubbed, and checks rendering, edge styles and the `ready` / `graph` / `run` messages. Set `PLAYWRIGHT_CHANNEL` to pick another browser channel.
 - **Extension-host** (`test/integration`) activates the extension on `test/fixtures/workspace` and runs the commands for real. It briefly opens a VS Code window.
 - **Contract** (`test/contract`) runs `dotnet fallout --plan` so Fallout emits a real `build-graph.json`, then checks the extension's types and assumptions against it. Set `FALLOUT_GRAPH=<path>` to check a graph from another framework version. Not part of `npm test`.
 - Fixtures live in `test/fixtures/`. They are not compiled and not shipped (`.vscodeignore`).
-- Not covered yet: the graph webview ([#37](https://github.com/Fallout-build/Fallout.Extensions.VSCode/issues/37)). CI does not run the tests yet.
+- Not covered: the Run Configuration webview, and terminal runs. CI does not run the tests yet.
 
 ## Releases
 
