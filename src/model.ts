@@ -39,8 +39,9 @@ const warned = new Set<string>();
 
 /**
  * Versioning contract: the extension's major.minor track the Fallout framework
- * release line (e.g. 10.4.x against Fallout 10.4); the patch moves independently.
- * The schema `version` is the hard gate, the major.minor comparison a drift warning.
+ * release line (e.g. 10.5.x against Fallout 10.5); the patch moves independently.
+ * The schema `version` is the hard gate; the major.minor comparison is a soft warning
+ * raised only when the workspace's Fallout is newer than the extension's line.
  */
 export function checkCompatibility(graph: BuildGraph, extensionVersion: string): void {
     let message: string | undefined;
@@ -48,11 +49,14 @@ export function checkCompatibility(graph: BuildGraph, extensionVersion: string):
         message = `Fallout: build-graph.json uses schema v${graph.version}, but this extension understands v${SUPPORTED_SCHEMA_VERSION}. ` +
             'Update the extension or the Fallout package — the view may be incomplete.';
     } else if (graph.falloutVersion) {
-        const [exMajor, exMinor] = extensionVersion.split('.');
-        const [fwMajor, fwMinor] = graph.falloutVersion.split('-')[0].split('.');
-        if (exMajor !== fwMajor || exMinor !== fwMinor) {
+        const [exMajor, exMinor] = extensionVersion.split('.').map(Number);
+        const [fwMajor, fwMinor] = graph.falloutVersion.split('-')[0].split('.').map(Number);
+        // Warn only when the workspace's Fallout is newer than the extension's line.
+        // Older lines (e.g. 10.4) stay supported down to the graph's first release.
+        const workspaceNewer = fwMajor > exMajor || (fwMajor === exMajor && fwMinor > exMinor);
+        if (workspaceNewer) {
             message = `Fallout: this workspace builds with Fallout ${graph.falloutVersion}, but the extension is versioned ${extensionVersion} ` +
-                `(coupled to Fallout ${exMajor}.${exMinor}). Things may not line up.`;
+                `(coupled to Fallout ${exMajor}.${exMinor}). Update the extension — things may not line up.`;
         }
     }
     if (message && !warned.has(message)) {

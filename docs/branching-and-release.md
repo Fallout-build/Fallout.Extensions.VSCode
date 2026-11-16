@@ -101,7 +101,7 @@ git push -u origin support/v10.4
 # then, on develop, retarget version.json + the pinned Fallout.Common together
 ```
 
-There are **no support lines today**: `main` targets Fallout 10.4 and there is no newer line to move to. Nothing to cut yet.
+There are **no support lines yet**. `develop` targets Fallout 10.5; `main` still targets 10.4 until `develop` is promoted. Cut `support/v10.4` from `main` (commands above) **before** that promotion, so 10.4 keeps a home for hotfixes.
 
 ## Protection
 

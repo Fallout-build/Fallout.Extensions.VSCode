@@ -6,7 +6,7 @@ Versioning, channels, and the runbook for every kind of release. Branch model in
 
 [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) computes the version from `version.json`, the same as the framework repo.
 
-- `version.json`'s `version` pins the **Fallout release line** this extension targets (`10.4`). The third component is the git height and moves on its own.
+- `version.json`'s `version` pins the **Fallout release line** this extension targets (`10.5`). The third component is the git height and moves on its own.
 - The build **asserts** the declared line still matches the referenced `Fallout.Common`. Bumping one without the other fails the build rather than shipping a version that misstates what it targets.
 - `versionHeightOffset` exists because height restarts when `version.json`'s `version` changes. Marketplace versions must increase monotonically, so the offset keeps the sequence moving forward.
 
