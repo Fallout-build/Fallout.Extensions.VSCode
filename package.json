@@ -41,7 +41,8 @@
         "workspaceContains:**/.fallout/temp/build-graph.json",
         "workspaceContains:**/.nuke/temp/build-graph.json",
         "workspaceContains:**/.nuke/parameters.json",
-        "workspaceContains:**/.nuke/build.schema.json"
+        "workspaceContains:**/.nuke/build.schema.json",
+        "workspaceContains:**/_build.csproj"
     ],
     "contributes": {
         "viewsContainers": {
@@ -99,11 +100,13 @@
         "viewsWelcome": [
             {
                 "view": "fallout.build",
-                "contents": "No Fallout build graph found in this workspace.\nRun the build once to generate `build-graph.json`, then refresh.\n[Plan build (dry run)](command:fallout.planTarget)"
+                "contents": "No Fallout build graph found in this workspace.\nRun the build once to generate `build-graph.json`, then refresh.\n[Plan build (dry run)](command:fallout.planTarget)",
+                "when": "!fallout.nukeRepo"
             },
             {
                 "view": "fallout.buildExplorer",
-                "contents": "No Fallout build graph found in this workspace.\nRun the build once to generate `build-graph.json`, then refresh.\n[Plan build (dry run)](command:fallout.planTarget)"
+                "contents": "No Fallout build graph found in this workspace.\nRun the build once to generate `build-graph.json`, then refresh.\n[Plan build (dry run)](command:fallout.planTarget)",
+                "when": "!fallout.nukeRepo"
             },
             {
                 "view": "fallout.build",

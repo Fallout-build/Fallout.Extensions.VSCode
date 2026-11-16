@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { BuildGraph, GraphSource, RELATIONS, Relation, Target, checkCompatibility, findGraphFile, hasRelations, loadGraph, relatedTargets, sortTargets } from './model';
 import { GraphPanel } from './graphPanel';
 import { goToTarget } from './goToTarget';
-import { isNukeRepo, migrateFromNuke, promptIfNukeRepo } from './migrate';
+import { hasNukeRepo, migrateFromNuke, promptIfNukeRepo } from './migrate';
 import { RunConfigStore, RunConfigViewProvider } from './runConfig';
 
 const RELATION_LABELS: Record<Relation, string> = {
@@ -219,21 +219,26 @@ export function activate(context: vscode.ExtensionContext): void {
     );
 
     // Drives the "migrate from NUKE" welcome content in the empty Build views.
-    const updateNukeContext = () => void vscode.commands.executeCommand(
-        'setContext', 'fallout.nukeRepo', (vscode.workspace.workspaceFolders ?? []).some(f => isNukeRepo(f.uri.fsPath)));
+    const updateNukeContext = () => void vscode.commands.executeCommand('setContext', 'fallout.nukeRepo', hasNukeRepo());
+    const afterMigration = () => { updateNukeContext(); provider.refresh(); };
     updateNukeContext();
 
-    // The migrator renames .nuke/ to .fallout/ - re-evaluate the NUKE content when that lands.
+    // The migrator renames .nuke/ to .fallout/. The terminal closing is the primary signal; the watchers
+    // also catch a rename done outside the extension.
     const falloutDirWatcher = vscode.workspace.createFileSystemWatcher('**/.fallout');
-    falloutDirWatcher.onDidCreate(() => { updateNukeContext(); provider.refresh(); });
-    falloutDirWatcher.onDidDelete(() => { updateNukeContext(); provider.refresh(); });
+    falloutDirWatcher.onDidCreate(afterMigration);
+    falloutDirWatcher.onDidDelete(afterMigration);
+    const nukeDirWatcher = vscode.workspace.createFileSystemWatcher('**/.nuke');
+    nukeDirWatcher.onDidCreate(afterMigration);
+    nukeDirWatcher.onDidDelete(afterMigration);
 
     context.subscriptions.push(
         falloutDirWatcher,
-        vscode.commands.registerCommand('fallout.migrateFromNuke', () => migrateFromNuke(workspaceRoot())),
+        nukeDirWatcher,
+        vscode.commands.registerCommand('fallout.migrateFromNuke', () => migrateFromNuke(afterMigration)),
     );
 
-    void promptIfNukeRepo(context, workspaceRoot());
+    void promptIfNukeRepo(context, afterMigration);
 }
 
 export function deactivate(): void {}
