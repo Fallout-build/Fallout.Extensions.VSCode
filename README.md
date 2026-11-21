@@ -33,6 +33,10 @@ A form for the parameters and secrets your build takes:
 
 ![The Run Configuration view with a parameter and a secret](https://raw.githubusercontent.com/Fallout-build/Fallout.Extensions.VSCode/develop/.assets/screenshots/run-configuration.png)
 
+### Migrate from NUKE
+
+Open a NUKE build and the extension offers to migrate it. **Fallout: Migrate from NUKE…** runs [`fallout-migrate`](https://github.com/Fallout-build/Fallout/blob/main/docs/Migration/from-nuke.md) in an integrated terminal: a dry run first, so you can read what would change, then the real run. If the tool is missing, the extension offers to install it (`dotnet tool install -g Fallout.Migrate`).
+
 ### Go to definition
 
 Jump straight to the `Target X => …` C# declaration. Uses the C# language service when it's warmed up and falls back to a workspace scan, and disambiguates by declaring type when several components declare a target of the same name.
